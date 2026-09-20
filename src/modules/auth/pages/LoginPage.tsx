@@ -223,7 +223,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
             </TouchableOpacity>
 
             {/* Accesos rápidos dentro del mismo card */}
-            {isLogin && <QuickTestButtons onSelect={fillCredentials} />}
+            {isLogin && <QuickTestButtons selectedEmail={email} onSelect={fillCredentials} />}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
