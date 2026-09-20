@@ -1,10 +1,4 @@
-import { Platform } from 'react-native';
-
-export const API_BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:3000',
-  ios: 'http://localhost:3000',
-  default: 'http://localhost:3000',
-});
+import { httpClient } from '@/arquitectura/httpClient';
 
 export interface User {
   id: string;
@@ -30,57 +24,23 @@ export interface RegisterPayload {
 
 export const authApi = {
   async login(payload: LoginPayload): Promise<{ success: boolean; user?: User; error?: string }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.message || 'Error al iniciar sesión. Verifica tus credenciales.',
-        };
-      }
-
-      return { success: true, user: data };
-    } catch (err: any) {
-      return {
-        success: false,
-        error: `No se pudo conectar con el servidor (${API_BASE_URL}). Asegúrate de que el backend esté corriendo.`,
-      };
-    }
+    const res = await httpClient.post<User>('/auth/login', payload);
+    return {
+      success: res.success,
+      user: res.data,
+      error: res.error,
+    };
   },
 
   async register(payload: RegisterPayload): Promise<{ success: boolean; user?: User; error?: string }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...payload,
-          role: payload.role || 'GUEST',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.message || 'Error al registrar la cuenta.',
-        };
-      }
-
-      return { success: true, user: data };
-    } catch (err: any) {
-      return {
-        success: false,
-        error: `No se pudo conectar con el servidor (${API_BASE_URL}). Asegúrate de que el backend esté corriendo.`,
-      };
-    }
+    const res = await httpClient.post<User>('/auth/register', {
+      ...payload,
+      role: payload.role || 'GUEST',
+    });
+    return {
+      success: res.success,
+      user: res.data,
+      error: res.error,
+    };
   },
 };
