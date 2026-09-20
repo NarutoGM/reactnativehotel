@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { User } from '../../auth/api/auth.api';
 import { roomsApi, Booking } from '../api/rooms.api';
 
@@ -40,6 +39,17 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
 
   const handlePickAndUploadVoucher = async (booking: Booking) => {
     try {
+      let ImagePicker: any;
+      try {
+        ImagePicker = await import('expo-image-picker');
+      } catch (err) {
+        Alert.alert(
+          'Módulo de Cámara / Galería',
+          'El módulo nativo se está vinculando. Si estás en emulador, ingresa el link del voucher o reinicia la app con expo run:android.'
+        );
+        return;
+      }
+
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permiso Denegado', 'Necesitamos acceso a la galería para seleccionar la captura del voucher.');
@@ -47,7 +57,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions?.Images || 'Images',
         allowsEditing: true,
         quality: 0.8,
       });
