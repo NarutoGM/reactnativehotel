@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Room, roomsApi, CreateRoomPayload, UpdateRoomPayload } from '../api/rooms.api';
@@ -36,6 +37,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   const [bedType, setBedType] = useState(room?.bedType || '1 Cama Queen');
   const [surfaceAreaM2, setSurfaceAreaM2] = useState(String(room?.surfaceAreaM2 || '28'));
   const [imageUrl, setImageUrl] = useState(room?.imageUrl || '');
+  const [selectedFileUri, setSelectedFileUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Sincronizar estado cuando se abre para editar
@@ -50,6 +52,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       setBedType(room.bedType);
       setSurfaceAreaM2(String(room.surfaceAreaM2));
       setImageUrl(room.imageUrl || '');
+      setSelectedFileUri(null);
     } else {
       setRoomNumber('');
       setTitle('');
@@ -60,10 +63,41 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       setBedType('1 Cama Queen');
       setSurfaceAreaM2('28');
       setImageUrl('');
+      setSelectedFileUri(null);
     }
   }, [room, visible]);
 
   if (!visible) return null;
+
+  const handlePickImage = async () => {
+    try {
+      let ImagePicker: any;
+      try {
+        ImagePicker = await import('expo-image-picker');
+      } catch (err) {
+        Alert.alert('Aviso', 'Error al cargar el selector de imágenes.');
+        return;
+      }
+
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permiso Denegado', 'Se requiere acceso a la galería para seleccionar la foto.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions?.Images || 'Images',
+        allowsEditing: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        setSelectedFileUri(result.assets[0].uri);
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'No se pudo seleccionar la imagen.');
+    }
+  };
 
   const handleSave = async () => {
     if (!roomNumber.trim() || !title.trim() || !pricePerNight.trim()) {
@@ -72,6 +106,8 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
     }
 
     setLoading(true);
+
+    let createdOrUpdatedRoomId = room?.id;
 
     if (isEditing && room) {
       const payload: UpdateRoomPayload = {
@@ -87,15 +123,12 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       };
 
       const res = await roomsApi.updateRoom(room.id, payload);
-      setLoading(false);
-
-      if (res.success) {
-        Alert.alert('Éxito', `Habitación ${roomNumber} actualizada correctamente.`);
-        onSuccess();
-        onClose();
-      } else {
+      if (!res.success) {
+        setLoading(false);
         Alert.alert('Error', res.error || 'No se pudo actualizar la habitación.');
+        return;
       }
+      createdOrUpdatedRoomId = room.id;
     } else {
       const payload: CreateRoomPayload = {
         roomNumber: roomNumber.trim(),
@@ -110,17 +143,32 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       };
 
       const res = await roomsApi.createRoom(payload);
-      setLoading(false);
-
-      if (res.success) {
-        Alert.alert('Éxito', `Habitación ${roomNumber} creada con éxito.`);
-        onSuccess();
-        onClose();
-      } else {
+      if (!res.success || !res.room) {
+        setLoading(false);
         Alert.alert('Error', res.error || 'No se pudo crear la habitación.');
+        return;
+      }
+      createdOrUpdatedRoomId = res.room.id;
+    }
+
+    // Si el usuario seleccionó un archivo de imagen local, subirlo a Firebase Storage vía backend
+    if (selectedFileUri && createdOrUpdatedRoomId) {
+      const uploadRes = await roomsApi.uploadRoomImage(createdOrUpdatedRoomId, selectedFileUri);
+      if (!uploadRes.success) {
+        Alert.alert(
+          'Habitación Guardada',
+          'La habitación se guardó pero hubo un problema al subir la foto a Firebase.'
+        );
       }
     }
+
+    setLoading(false);
+    Alert.alert('Éxito', `Habitación ${roomNumber} guardada correctamente.`);
+    onSuccess();
+    onClose();
   };
+
+  const previewImage = selectedFileUri || imageUrl;
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -146,8 +194,41 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
           <ScrollView className="p-5" showsVerticalScrollIndicator={false}>
             <View className="space-y-3 pb-8">
+              {/* SUBIDA DE ARCHIVO DE IMAGEN A FIREBASE */}
+              <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 items-center">
+                {previewImage ? (
+                  <View className="w-full relative mb-3">
+                    <Image
+                      source={{ uri: previewImage }}
+                      className="w-full h-36 rounded-xl bg-slate-200"
+                      resizeMode="cover"
+                    />
+                    {selectedFileUri && (
+                      <View className="absolute top-2 left-2 bg-emerald-600 px-2.5 py-0.5 rounded-full">
+                        <Text className="text-white text-[10px] font-bold">Nuevo Archivo Listo</Text>
+                      </View>
+                    )}
+                  </View>
+                ) : (
+                  <View className="w-full h-28 border-2 border-dashed border-slate-300 rounded-xl justify-center items-center mb-3 bg-white">
+                    <Ionicons name="image-outline" size={32} color="#94A3B8" />
+                    <Text className="text-slate-400 text-[12px] font-medium mt-1">Sin imagen seleccionada</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  className="bg-slate-900 py-2.5 px-4 rounded-xl flex-row items-center gap-2 active:bg-slate-800 shadow-sm"
+                  onPress={handlePickImage}
+                >
+                  <Ionicons name="cloud-upload-outline" size={16} color="#FFFFFF" />
+                  <Text className="text-white text-[12px] font-bold">
+                    {previewImage ? 'Cambiar Archivo de Imagen' : 'Subir Archivo de Imagen (Firebase)'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
               {/* Número y Título */}
-              <View className="flex-row gap-3">
+              <View className="flex-row gap-3 mt-1">
                 <View className="w-1/3">
                   <Text className="text-slate-700 text-[12px] font-bold mb-1">N° Habitación *</Text>
                   <TextInput
@@ -248,18 +329,6 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     onChangeText={setSurfaceAreaM2}
                   />
                 </View>
-              </View>
-
-              {/* URL de Imagen */}
-              <View className="mt-2">
-                <Text className="text-slate-700 text-[12px] font-bold mb-1">URL de Imagen (Opcional)</Text>
-                <TextInput
-                  className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px]"
-                  placeholder="https://images.unsplash.com/..."
-                  placeholderTextColor="#94A3B8"
-                  value={imageUrl}
-                  onChangeText={setImageUrl}
-                />
               </View>
 
               {/* Botón Guardar */}

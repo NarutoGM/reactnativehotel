@@ -138,6 +138,26 @@ export const roomsApi = {
     };
   },
 
+  async uploadRoomImage(roomId: string, imageUri: string): Promise<{ success: boolean; room?: Room; error?: string }> {
+    const filename = imageUri.split('/').pop() || 'room.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+
+    const res = await httpClient.postFormData<Room>(`/rooms/${roomId}/image`, formData);
+    return {
+      success: res.success,
+      room: res.data,
+      error: res.error,
+    };
+  },
+
   async deleteRoom(id: string): Promise<{ success: boolean; error?: string }> {
     const res = await httpClient.delete(`/rooms/${id}`);
     return {
