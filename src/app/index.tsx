@@ -20,7 +20,7 @@ export default function AppScreen() {
 
   // Usuario autenticado
   return (
-    <SafeAreaView className="flex-1 bg-slate-100">
+    <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-slate-100">
       {/* Top Header */}
       <View className="flex-row justify-between items-center px-4 py-3.5 bg-white border-b border-slate-200">
         <View className="flex-row items-center gap-2.5">

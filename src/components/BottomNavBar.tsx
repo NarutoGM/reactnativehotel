@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export type MainTabType = 'rooms' | 'bookings' | 'profile';
@@ -10,8 +11,11 @@ interface BottomNavBarProps {
 }
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChange }) => {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 14);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomPadding }]}>
       <TouchableOpacity
         style={styles.tabBtn}
         onPress={() => onTabChange('rooms')}
@@ -66,26 +70,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
-    paddingVertical: 8,
-    paddingBottom: 16,
+    paddingTop: 8,
     justifyContent: 'space-around',
     shadowColor: '#64748B',
     shadowOpacity: 0.06,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: -3 },
-    elevation: 6,
+    elevation: 8,
   },
   tabBtn: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   tabLabel: {
     fontSize: 11,
     color: '#94A3B8',
     fontWeight: '600',
-    marginTop: 3,
+    marginTop: 2,
   },
   tabLabelActive: {
     color: '#0F172A',
