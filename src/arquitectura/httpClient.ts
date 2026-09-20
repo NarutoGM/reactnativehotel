@@ -110,14 +110,24 @@ class HttpClient {
       const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
       const response = await fetch(url, {
         method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = { message: responseText };
+      }
+
       if (!response.ok) {
         return {
           success: false,
-          error: data.message || 'Error al subir el archivo.',
+          error: data?.message || `Error del servidor (${response.status})`,
         };
       }
 
@@ -125,7 +135,7 @@ class HttpClient {
     } catch (err: any) {
       return {
         success: false,
-        error: `Error al subir el archivo al backend (${this.baseUrl}).`,
+        error: `Error al conectar con el backend (${this.baseUrl}): ${err?.message || 'Error de red'}`,
       };
     }
   }
