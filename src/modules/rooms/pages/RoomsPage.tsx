@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '../../auth/api/auth.api';
@@ -86,7 +87,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToB
   };
 
   return (
-    <View className="flex-1 bg-slate-100">
+    <View style={styles.container} className="flex-1 bg-slate-100">
       <DateFilterBar
         checkIn={checkIn}
         checkOut={checkOut}
@@ -97,30 +98,30 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToB
         onSearch={() => fetchRooms()}
       />
 
-      <View className="flex-1 px-3.5">
-        <View className="flex-row justify-between items-center mb-2.5">
-          <Text className="text-slate-900 text-[16px] font-black">
+      <View style={styles.listContainer} className="flex-1 px-3.5">
+        <View style={styles.titleRow} className="flex-row justify-between items-center mb-2.5">
+          <Text style={styles.titleText} className="text-slate-900 text-[16px] font-black">
             Habitaciones Disponibles ({rooms.length})
           </Text>
-          <Text className="text-slate-500 text-[12px] font-medium">
+          <Text style={styles.subtitleText} className="text-slate-500 text-[12px] font-medium">
             Para {capacity} personas
           </Text>
         </View>
 
         {roomsLoading ? (
-          <View className="flex-1 justify-center items-center py-12">
+          <View style={styles.centerBox} className="flex-1 justify-center items-center py-12">
             <ActivityIndicator size="large" color="#0F172A" />
-            <Text className="text-slate-500 mt-2.5 text-[13px] font-medium">
+            <Text style={styles.loadingText} className="text-slate-500 mt-2.5 text-[13px] font-medium">
               Buscando disponibilidad en Aura Hotel...
             </Text>
           </View>
         ) : rooms.length === 0 ? (
-          <View className="flex-1 justify-center items-center px-8 py-10">
+          <View style={styles.centerBox} className="flex-1 justify-center items-center px-8 py-10">
             <Ionicons name="bed-outline" size={44} color="#94A3B8" />
-            <Text className="text-slate-900 text-[16px] font-bold mt-2.5">
+            <Text style={styles.emptyTitle} className="text-slate-900 text-[16px] font-bold mt-2.5">
               No se encontraron habitaciones
             </Text>
-            <Text className="text-slate-500 text-center text-[12px] mt-1">
+            <Text style={styles.emptySubtitle} className="text-slate-500 text-center text-[12px] mt-1">
               Prueba cambiando las fechas o reduciendo la cantidad de huéspedes.
             </Text>
           </View>
@@ -128,7 +129,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToB
           <FlatList
             data={rooms}
             keyExtractor={(item) => item.id}
-            contentContainerClassName="pb-6"
+            contentContainerStyle={styles.flatListContent}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <RoomCard
@@ -166,3 +167,56 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToB
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  listContainer: {
+    flex: 1,
+    paddingHorizontal: 14,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  titleText: {
+    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  subtitleText: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  centerBox: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  loadingText: {
+    color: '#64748B',
+    marginTop: 10,
+    fontSize: 13,
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  flatListContent: {
+    paddingBottom: 24,
+  },
+});

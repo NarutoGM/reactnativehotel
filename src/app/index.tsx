@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@/modules/auth/api/auth.api';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
@@ -20,7 +20,7 @@ export default function AppScreen() {
 
   // Usuario autenticado
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-slate-100">
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container} className="flex-1 bg-slate-100">
       {/* Top Header con Avatar de Iniciales y Tooltip interactivo */}
       <UserMenuHeader
         currentUser={currentUser}
@@ -29,7 +29,7 @@ export default function AppScreen() {
       />
 
       {/* Vistas según el Tab seleccionado */}
-      <View className="flex-1">
+      <View style={styles.content} className="flex-1">
         {activeTab === 'rooms' && (
           <RoomsPage
             currentUser={currentUser}
@@ -42,8 +42,18 @@ export default function AppScreen() {
         )}
       </View>
 
-      {/* Tab Navigation inferior para cambiar entre vistas */}
+      {/* Tab Navigation inferior pegado abajo */}
       <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  content: {
+    flex: 1,
+  },
+});
