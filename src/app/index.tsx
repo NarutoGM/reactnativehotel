@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,356 +9,575 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
+  Image,
+  Modal,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService, User } from '@/services/auth.service';
+import { roomsService, Room } from '@/services/rooms.service';
 
-export default function AuthScreen() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
+export default function AppScreen() {
+  // Estado de Autenticación
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authSuccess, setAuthSuccess] = useState('');
 
-  // Form Fields
+  // Formulario Auth
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
-  const [role, setRole] = useState<'GUEST' | 'RECEPTIONIST' | 'ADMIN'>('GUEST');
 
-  // Quick fill credentials
-  const fillCredentials = (userEmail: string, roleName: string) => {
-    setEmail(userEmail);
-    setPassword('Aura2026!');
-    setErrorMessage('');
-    setSuccessMessage(`Datos cargados para: ${roleName}`);
+  // Estado del Buscador de Habitaciones (Vista Cliente)
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [capacity, setCapacity] = useState('2');
+  const [checkIn, setCheckIn] = useState('2026-09-20');
+  const [checkOut, setCheckOut] = useState('2026-09-23');
+
+  // Modal de Reserva
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingSuccessModal, setBookingSuccessModal] = useState<any | null>(null);
+
+  // Cargar habitaciones disponibles al iniciar
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async (targetCapacity = capacity, inDate = checkIn, outDate = checkOut) => {
+    setRoomsLoading(true);
+    const parsedCap = parseInt(targetCapacity, 10) || 1;
+    const res = await roomsService.searchRooms({
+      capacity: parsedCap,
+      checkIn: inDate,
+      checkOut: outDate,
+    });
+    setRoomsLoading(false);
+    if (res.success) {
+      setRooms(res.rooms);
+    }
   };
 
+  // Login
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      setErrorMessage('Por favor ingresa tu correo y contraseña.');
+      setAuthError('Por favor ingresa tu correo y contraseña.');
       return;
     }
-
-    setLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setAuthLoading(true);
+    setAuthError('');
+    setAuthSuccess('');
 
     const res = await authService.login({
       email: email.trim().toLowerCase(),
       password: password.trim(),
     });
-
-    setLoading(false);
+    setAuthLoading(false);
 
     if (res.success && res.user) {
       setCurrentUser(res.user);
-      setSuccessMessage(`¡Bienvenido de nuevo, ${res.user.fullName}!`);
+      fetchRooms();
     } else {
-      setErrorMessage(res.error || 'Credenciales inválidas.');
+      setAuthError(res.error || 'Credenciales inválidas.');
     }
   };
 
+  // Register
   const handleRegister = async () => {
     if (!fullName.trim() || !email.trim() || !password.trim()) {
-      setErrorMessage('Por favor completa los campos obligatorios.');
+      setAuthError('Completa todos los campos obligatorios.');
       return;
     }
-
-    setLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setAuthLoading(true);
+    setAuthError('');
+    setAuthSuccess('');
 
     const res = await authService.register({
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
       password: password.trim(),
       documentNumber: documentNumber.trim() || 'N/A',
-      role,
+      role: 'GUEST',
     });
-
-    setLoading(false);
+    setAuthLoading(false);
 
     if (res.success && res.user) {
       setCurrentUser(res.user);
-      setSuccessMessage('¡Cuenta creada exitosamente en Aura Hotel!');
+      fetchRooms();
     } else {
-      setErrorMessage(res.error || 'No se pudo crear la cuenta.');
+      setAuthError(res.error || 'No se pudo crear la cuenta.');
     }
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setEmail('');
-    setPassword('');
-    setSuccessMessage('');
-    setErrorMessage('');
+  // Reserva de Habitación
+  const handleBookRoom = async () => {
+    if (!selectedRoom || !currentUser) return;
+    setBookingLoading(true);
+
+    const checkInMs = new Date(checkIn).getTime();
+    const checkOutMs = new Date(checkOut).getTime();
+    const nights = Math.max(1, Math.round((checkOutMs - checkInMs) / (1000 * 60 * 60 * 24))) || 1;
+    const totalAmount = nights * selectedRoom.pricePerNight;
+
+    const res = await roomsService.createBooking({
+      roomId: selectedRoom.id,
+      userId: currentUser.id,
+      guestName: currentUser.fullName,
+      guestEmail: currentUser.email,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      guestsCount: parseInt(capacity, 10) || 2,
+      totalAmount,
+    });
+
+    setBookingLoading(false);
+
+    if (res.success) {
+      const roomReserved = selectedRoom;
+      setSelectedRoom(null);
+      setBookingSuccessModal({
+        ...res.booking,
+        roomTitle: roomReserved.title,
+        nights,
+        totalAmount,
+      });
+      fetchRooms();
+    } else {
+      Alert.alert('Error', res.error || 'No se pudo completar la reserva.');
+    }
   };
 
-  // 1. Pantalla cuando el usuario ya ha iniciado sesión
-  if (currentUser) {
+  // Quick fill helper
+  const fillCredentials = (quickEmail: string, roleTitle: string) => {
+    setEmail(quickEmail);
+    setPassword('Aura2026!');
+    setAuthError('');
+    setAuthSuccess(`Cargado para: ${roleTitle}`);
+  };
+
+  // ==========================================
+  // VISTA 1: AUTENTICACIÓN (LOGIN / REGISTRO)
+  // ==========================================
+  if (!currentUser) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loggedCard}>
-          <Text style={styles.badgeRole}>
-            {currentUser.role === 'ADMIN'
-              ? '🛡️ ADMINISTRADOR'
-              : currentUser.role === 'RECEPTIONIST'
-              ? '🛎️ RECEPCIÓN'
-              : '👤 HUÉSPED'}
-          </Text>
+      <SafeAreaView style={styles.darkContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.authScroll} showsVerticalScrollIndicator={false}>
+            <View style={styles.brandBox}>
+              <Text style={styles.brandTitle}>🏨 AURA GRAND HOTEL</Text>
+              <Text style={styles.brandSubtitle}>Ingresa a tu cuenta para buscar y reservar</Text>
+            </View>
 
-          <Text style={styles.loggedTitle}>Sesión Iniciada</Text>
-          <Text style={styles.loggedName}>{currentUser.fullName}</Text>
-          <Text style={styles.loggedEmail}>{currentUser.email}</Text>
-          <Text style={styles.loggedDoc}>
-            Doc / DNI: {currentUser.documentNumber}
-          </Text>
+            <View style={styles.tabBar}>
+              <TouchableOpacity
+                style={[styles.tabBtn, isLogin && styles.tabBtnActive]}
+                onPress={() => {
+                  setIsLogin(true);
+                  setAuthError('');
+                }}
+              >
+                <Text style={[styles.tabBtnText, isLogin && styles.tabBtnTextActive]}>Iniciar Sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabBtn, !isLogin && styles.tabBtnActive]}
+                onPress={() => {
+                  setIsLogin(false);
+                  setAuthError('');
+                }}
+              >
+                <Text style={[styles.tabBtnText, !isLogin && styles.tabBtnTextActive]}>Crear Cuenta</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.divider} />
+            {authError ? (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorText}>{authError}</Text>
+              </View>
+            ) : null}
 
-          <Text style={styles.backendStatus}>
-            Conectado al backend Neon PostgreSQL ✨
-          </Text>
+            {authSuccess ? (
+              <View style={styles.successBanner}>
+                <Text style={styles.successText}>{authSuccess}</Text>
+              </View>
+            ) : null}
 
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.authCard}>
+              {!isLogin && (
+                <>
+                  <Text style={styles.label}>Nombre Completo *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: Sofia Morales"
+                    placeholderTextColor="#64748B"
+                    value={fullName}
+                    onChangeText={setFullName}
+                  />
+
+                  <Text style={styles.label}>DNI / Pasaporte</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: 72891045"
+                    placeholderTextColor="#64748B"
+                    value={documentNumber}
+                    onChangeText={setDocumentNumber}
+                  />
+                </>
+              )}
+
+              <Text style={styles.label}>Correo Electrónico *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="ejemplo@aurahotel.pe"
+                placeholderTextColor="#64748B"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+
+              <Text style={styles.label}>Contraseña *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor="#64748B"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={isLogin ? handleLogin : handleRegister}
+                disabled={authLoading}
+              >
+                {authLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.submitBtnText}>
+                    {isLogin ? 'Entrar a Aura Hotel' : 'Registrarme'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Accesos rápidos */}
+            {isLogin && (
+              <View style={styles.quickCard}>
+                <Text style={styles.quickTitle}>Accesos de prueba rápidos:</Text>
+                <View style={styles.quickRow}>
+                  <TouchableOpacity
+                    style={styles.quickBtn}
+                    onPress={() => fillCredentials('huesped@aurahotel.pe', 'Huésped')}
+                  >
+                    <Text style={styles.quickBtnText}>👤 Huésped</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.quickBtn}
+                    onPress={() => fillCredentials('recepcion@aurahotel.pe', 'Recepción')}
+                  >
+                    <Text style={styles.quickBtnText}>🛎️ Recepción</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.quickBtn, styles.quickBtnAdmin]}
+                    onPress={() => fillCredentials('admin@aurahotel.pe', 'Admin')}
+                  >
+                    <Text style={[styles.quickBtnText, styles.quickBtnAdminText]}>🛡️ Admin</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.quickHint}>Clave única: Aura2026!</Text>
+              </View>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
 
-  // 2. Pantalla de Login / Registro
+  // ==========================================
+  // VISTA 2: CLIENTE / HUÉSPED (BUSCADOR & HABITACIONES)
+  // ==========================================
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header Brand */}
-          <View style={styles.brandContainer}>
-            <Text style={styles.hotelLogo}>🏨 AURA GRAND HOTEL</Text>
-            <Text style={styles.hotelSubtitle}>
-              Gestión Hotelera y Experiencia de Huéspedes
+    <SafeAreaView style={styles.mainContainer}>
+      {/* Top Header */}
+      <View style={styles.headerBar}>
+        <View>
+          <Text style={styles.headerHotel}>🏨 AURA GRAND HOTEL</Text>
+          <Text style={styles.headerUser}>Hola, {currentUser.fullName.split(' ')[0]} 👋</Text>
+        </View>
+        <TouchableOpacity style={styles.logoutPill} onPress={() => setCurrentUser(null)}>
+          <Text style={styles.logoutPillText}>Salir</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Buscador Superior: Fechas y Capacidad */}
+      <View style={styles.searchBox}>
+        <Text style={styles.searchTitle}>🔍 Encuentra tu Habitación Ideal</Text>
+
+        <View style={styles.searchInputsRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.filterLabel}>Entrada (Check-in)</Text>
+            <TextInput
+              style={styles.filterInput}
+              value={checkIn}
+              onChangeText={setCheckIn}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.filterLabel}>Salida (Check-out)</Text>
+            <TextInput
+              style={styles.filterInput}
+              value={checkOut}
+              onChangeText={setCheckOut}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+          <View style={{ width: 85 }}>
+            <Text style={styles.filterLabel}>Huéspedes</Text>
+            <TextInput
+              style={styles.filterInput}
+              value={capacity}
+              onChangeText={setCapacity}
+              keyboardType="numeric"
+              placeholder="2"
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.searchBtn} onPress={() => fetchRooms()}>
+          <Text style={styles.searchBtnText}>Aplicar Filtros y Buscar</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Resultados / Lista de Habitaciones */}
+      <View style={styles.resultsContainer}>
+        <View style={styles.resultsHeaderRow}>
+          <Text style={styles.resultsTitle}>
+            Habitaciones Disponibles ({rooms.length})
+          </Text>
+          <Text style={styles.resultsSubtitle}>Para {capacity} personas</Text>
+        </View>
+
+        {roomsLoading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color="#2563EB" />
+            <Text style={styles.loadingText}>Buscando habitaciones en Neon DB...</Text>
+          </View>
+        ) : rooms.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyIcon}>🏨</Text>
+            <Text style={styles.emptyTitle}>No se encontraron habitaciones</Text>
+            <Text style={styles.emptyDesc}>
+              Prueba cambiando las fechas o reduciendo la cantidad de huéspedes.
             </Text>
           </View>
+        ) : (
+          <FlatList
+            data={rooms}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => {
+              const defaultImage =
+                item.type.toLowerCase().includes('suite')
+                  ? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80'
+                  : 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80';
 
-          {/* Selector de Pestañas */}
-          <View style={styles.tabSelector}>
-            <TouchableOpacity
-              style={[styles.tabButton, isLogin && styles.tabButtonActive]}
-              onPress={() => {
-                setIsLogin(true);
-                setErrorMessage('');
-                setSuccessMessage('');
-              }}
-            >
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  isLogin && styles.tabButtonTextActive,
-                ]}
-              >
-                Iniciar Sesión
-              </Text>
-            </TouchableOpacity>
+              return (
+                <View style={styles.roomCard}>
+                  <Image
+                    source={{ uri: item.imageUrl || defaultImage }}
+                    style={styles.roomImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.roomBadge}>
+                    <Text style={styles.roomBadgeText}>{item.roomNumber}</Text>
+                  </View>
 
-            <TouchableOpacity
-              style={[styles.tabButton, !isLogin && styles.tabButtonActive]}
-              onPress={() => {
-                setIsLogin(false);
-                setErrorMessage('');
-                setSuccessMessage('');
-              }}
-            >
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  !isLogin && styles.tabButtonTextActive,
-                ]}
-              >
-                Crear Cuenta
-              </Text>
-            </TouchableOpacity>
-          </View>
+                  <View style={styles.roomDetails}>
+                    <View style={styles.roomTitleRow}>
+                      <Text style={styles.roomTitle}>{item.title}</Text>
+                      <Text style={styles.roomRating}>★ {item.rating || 4.8}</Text>
+                    </View>
 
-          {/* Alertas */}
-          {errorMessage ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            </View>
-          ) : null}
+                    <Text style={styles.roomMeta}>
+                      Piso {item.floor} · {item.bedType} · {item.surfaceAreaM2} m²
+                    </Text>
 
-          {successMessage ? (
-            <View style={styles.successBox}>
-              <Text style={styles.successText}>{successMessage}</Text>
-            </View>
-          ) : null}
+                    <View style={styles.chipsRow}>
+                      <View style={styles.chip}>
+                        <Text style={styles.chipText}>👥 Hasta {item.capacity} pers.</Text>
+                      </View>
+                      <View style={styles.chip}>
+                        <Text style={styles.chipText}>✨ Vista Exterior</Text>
+                      </View>
+                      <View style={styles.chip}>
+                        <Text style={styles.chipText}>📶 Wi-Fi Gratis</Text>
+                      </View>
+                    </View>
 
-          {/* Formulario */}
-          <View style={styles.card}>
-            {!isLogin && (
+                    <View style={styles.roomFooter}>
+                      <View>
+                        <Text style={styles.priceLabel}>Precio por noche</Text>
+                        <Text style={styles.priceValue}>S/ {item.pricePerNight}</Text>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.bookBtn}
+                        onPress={() => setSelectedRoom(item)}
+                      >
+                        <Text style={styles.bookBtnText}>Reservar Ahora</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              );
+            }}
+          />
+        )}
+      </View>
+
+      {/* MODAL DE CONFIRMACIÓN DE RESERVA */}
+      <Modal visible={!!selectedRoom} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {selectedRoom && (
               <>
-                <Text style={styles.inputLabel}>Nombre y Apellidos *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: Sofia Morales"
-                  placeholderTextColor="#94A3B8"
-                  value={fullName}
-                  onChangeText={setFullName}
-                />
+                <Text style={styles.modalTitle}>Confirmar Reserva</Text>
+                <Text style={styles.modalSubtitle}>{selectedRoom.title}</Text>
 
-                <Text style={styles.inputLabel}>DNI o Pasaporte</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: 72891045"
-                  placeholderTextColor="#94A3B8"
-                  value={documentNumber}
-                  onChangeText={setDocumentNumber}
-                />
+                <View style={styles.modalInfoBox}>
+                  <Text style={styles.modalInfoItem}>
+                    📅 <Text style={{ fontWeight: 'bold' }}>Fechas:</Text> {checkIn} al {checkOut}
+                  </Text>
+                  <Text style={styles.modalInfoItem}>
+                    👥 <Text style={{ fontWeight: 'bold' }}>Huéspedes:</Text> {capacity} personas
+                  </Text>
+                  <Text style={styles.modalInfoItem}>
+                    🛏️ <Text style={{ fontWeight: 'bold' }}>Camas:</Text> {selectedRoom.bedType}
+                  </Text>
+                  <Text style={styles.modalInfoItem}>
+                    💵 <Text style={{ fontWeight: 'bold' }}>Tarifa:</Text> S/ {selectedRoom.pricePerNight} / noche
+                  </Text>
+                </View>
+
+                <View style={styles.modalActionRow}>
+                  <TouchableOpacity
+                    style={styles.modalCancelBtn}
+                    onPress={() => setSelectedRoom(null)}
+                    disabled={bookingLoading}
+                  >
+                    <Text style={styles.modalCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.modalConfirmBtn}
+                    onPress={handleBookRoom}
+                    disabled={bookingLoading}
+                  >
+                    {bookingLoading ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.modalConfirmText}>Confirmar</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </>
             )}
+          </View>
+        </View>
+      </Modal>
 
-            <Text style={styles.inputLabel}>Correo Electrónico *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="ejemplo@aurahotel.pe"
-              placeholderTextColor="#94A3B8"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
+      {/* MODAL RESERVA EXITOSA */}
+      <Modal visible={!!bookingSuccessModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSuccessContent}>
+            <Text style={{ fontSize: 44, textAlign: 'center', marginBottom: 10 }}>🎉</Text>
+            <Text style={styles.successModalTitle}>¡Reserva Registrada!</Text>
+            <Text style={styles.successModalDesc}>
+              Tu reserva para <Text style={{ fontWeight: 'bold' }}>{bookingSuccessModal?.roomTitle}</Text> ha sido creada en estado pendiente de voucher.
+            </Text>
 
-            <Text style={styles.inputLabel}>Contraseña *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#94A3B8"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.ticketBox}>
+              <Text style={styles.ticketLabel}>Código de Reserva:</Text>
+              <Text style={styles.ticketCode}>{bookingSuccessModal?.bookingId}</Text>
+              <Text style={styles.ticketTotal}>Total: S/ {bookingSuccessModal?.totalAmount}</Text>
+            </View>
 
             <TouchableOpacity
-              style={styles.mainButton}
-              onPress={isLogin ? handleLogin : handleRegister}
-              disabled={loading}
+              style={styles.successDoneBtn}
+              onPress={() => setBookingSuccessModal(null)}
             >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.mainButtonText}>
-                  {isLogin ? 'Entrar al Sistema' : 'Registrar Cuenta'}
-                </Text>
-              )}
+              <Text style={styles.successDoneText}>Entendido</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Accesos rápidos de prueba */}
-          {isLogin && (
-            <View style={styles.quickAccessCard}>
-              <Text style={styles.quickAccessTitle}>
-                Accesos rápidos de prueba (Neon DB):
-              </Text>
-              <View style={styles.quickButtonsRow}>
-                <TouchableOpacity
-                  style={styles.quickButton}
-                  onPress={() =>
-                    fillCredentials('huesped@aurahotel.pe', 'Huésped Demo')
-                  }
-                >
-                  <Text style={styles.quickButtonText}>👤 Huésped</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.quickButton}
-                  onPress={() =>
-                    fillCredentials('recepcion@aurahotel.pe', 'Recepción')
-                  }
-                >
-                  <Text style={styles.quickButtonText}>🛎️ Recepción</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.quickButton, styles.quickButtonAdmin]}
-                  onPress={() =>
-                    fillCredentials('admin@aurahotel.pe', 'Administrador')
-                  }
-                >
-                  <Text style={[styles.quickButtonText, styles.quickButtonAdminText]}>
-                    🛡️ Admin
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.quickNote}>
-                Contraseña unificada: Aura2026!
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  darkContainer: {
     flex: 1,
     backgroundColor: '#0F172A',
   },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+  authScroll: {
+    padding: 20,
   },
-  brandContainer: {
+  brandBox: {
     alignItems: 'center',
     marginVertical: 18,
   },
-  hotelLogo: {
+  brandTitle: {
     fontSize: 22,
     fontWeight: '800',
     color: '#F8FAFC',
     letterSpacing: 1.2,
   },
-  hotelSubtitle: {
+  brandSubtitle: {
     fontSize: 13,
     color: '#94A3B8',
     marginTop: 4,
+    textAlign: 'center',
   },
-  tabSelector: {
+  tabBar: {
     flexDirection: 'row',
     backgroundColor: '#1E293B',
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
   },
-  tabButton: {
+  tabBtn: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 8,
   },
-  tabButtonActive: {
+  tabBtnActive: {
     backgroundColor: '#2563EB',
   },
-  tabButtonText: {
+  tabBtnText: {
     color: '#94A3B8',
     fontWeight: '600',
     fontSize: 14,
   },
-  tabButtonTextActive: {
+  tabBtnTextActive: {
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
-  errorBox: {
+  errorBanner: {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
     borderColor: '#EF4444',
     borderWidth: 1,
@@ -371,7 +590,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  successBox: {
+  successBanner: {
     backgroundColor: 'rgba(34, 197, 94, 0.15)',
     borderColor: '#22C55E',
     borderWidth: 1,
@@ -384,16 +603,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  card: {
+  authCard: {
     backgroundColor: '#1E293B',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 5,
+    elevation: 4,
   },
-  inputLabel: {
+  label: {
     color: '#E2E8F0',
     fontSize: 13,
     fontWeight: '600',
@@ -410,127 +626,422 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
   },
-  mainButton: {
+  submitBtn: {
     backgroundColor: '#2563EB',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 20,
   },
-  mainButtonText: {
+  submitBtnText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  quickAccessCard: {
+  quickCard: {
     marginTop: 20,
-    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    backgroundColor: '#1E293B',
     borderRadius: 14,
     padding: 14,
     borderColor: '#334155',
     borderWidth: 1,
   },
-  quickAccessTitle: {
+  quickTitle: {
     color: '#94A3B8',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 10,
     textAlign: 'center',
   },
-  quickButtonsRow: {
+  quickRow: {
     flexDirection: 'row',
     gap: 8,
   },
-  quickButton: {
+  quickBtn: {
     flex: 1,
     backgroundColor: '#334155',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
-  quickButtonText: {
+  quickBtnText: {
     color: '#E2E8F0',
     fontSize: 12,
     fontWeight: '600',
   },
-  quickButtonAdmin: {
+  quickBtnAdmin: {
     backgroundColor: 'rgba(234, 88, 12, 0.2)',
     borderColor: '#F97316',
     borderWidth: 1,
   },
-  quickButtonAdminText: {
+  quickBtnAdminText: {
     color: '#FB923C',
   },
-  quickNote: {
+  quickHint: {
     color: '#64748B',
     fontSize: 11,
     textAlign: 'center',
     marginTop: 8,
   },
-  loggedCard: {
-    margin: 20,
-    backgroundColor: '#1E293B',
-    borderRadius: 20,
-    padding: 24,
+
+  // CLIENT DASHBOARD STYLES
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#1E293B',
+    borderBottomColor: '#334155',
+    borderBottomWidth: 1,
+  },
+  headerHotel: {
+    fontSize: 11,
+    color: '#38BDF8',
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  headerUser: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  logoutPill: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  logoutPillText: {
+    color: '#F87171',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  searchBox: {
+    backgroundColor: '#1E293B',
+    margin: 12,
+    padding: 14,
+    borderRadius: 14,
     borderColor: '#334155',
     borderWidth: 1,
   },
-  badgeRole: {
-    backgroundColor: '#2563EB',
-    color: '#FFFFFF',
+  searchTitle: {
+    fontSize: 14,
     fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 10,
+  },
+  searchInputsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  filterLabel: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  filterInput: {
+    backgroundColor: '#0F172A',
+    borderColor: '#334155',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: '#FFFFFF',
     fontSize: 12,
+  },
+  searchBtn: {
+    backgroundColor: '#2563EB',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  searchBtnText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  resultsContainer: {
+    flex: 1,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 14,
-    overflow: 'hidden',
   },
-  loggedTitle: {
-    fontSize: 14,
+  resultsHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  resultsTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  resultsSubtitle: {
     color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    fontSize: 12,
   },
-  loggedName: {
-    fontSize: 22,
+  listContent: {
+    paddingBottom: 24,
+    gap: 14,
+  },
+  roomCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderColor: '#334155',
+    borderWidth: 1,
+  },
+  roomImage: {
+    width: '100%',
+    height: 160,
+  },
+  roomBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  roomBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  roomDetails: {
+    padding: 14,
+  },
+  roomTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  roomTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginTop: 4,
-    textAlign: 'center',
+    flex: 1,
   },
-  loggedEmail: {
-    fontSize: 14,
-    color: '#38BDF8',
-    marginTop: 4,
-  },
-  loggedDoc: {
+  roomRating: {
+    color: '#F59E0B',
+    fontWeight: 'bold',
     fontSize: 13,
+  },
+  roomMeta: {
     color: '#94A3B8',
-    marginTop: 6,
+    fontSize: 12,
+    marginTop: 4,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#334155',
-    width: '100%',
-    marginVertical: 20,
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginVertical: 10,
   },
-  backendStatus: {
-    color: '#10B981',
+  chip: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderColor: '#334155',
+    borderWidth: 1,
+  },
+  chipText: {
+    color: '#CBD5E1',
+    fontSize: 11,
+  },
+  roomFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 10,
+    borderTopColor: '#334155',
+    borderTopWidth: 1,
+  },
+  priceLabel: {
+    color: '#64748B',
+    fontSize: 10,
+  },
+  priceValue: {
+    color: '#38BDF8',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  bookBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  bookBtnText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
     fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 20,
   },
-  logoutButton: {
-    backgroundColor: '#DC2626',
+  loadingBox: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#94A3B8',
+    marginTop: 10,
+    fontSize: 13,
+  },
+  emptyBox: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+  emptyIcon: {
+    fontSize: 40,
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyDesc: {
+    color: '#64748B',
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  // MODAL STYLES
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 380,
+    borderColor: '#334155',
+    borderWidth: 1,
+  },
+  modalTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalSubtitle: {
+    color: '#38BDF8',
+    fontSize: 14,
+    marginBottom: 14,
+  },
+  modalInfoBox: {
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    padding: 12,
+    gap: 8,
+    marginBottom: 16,
+  },
+  modalInfoItem: {
+    color: '#E2E8F0',
+    fontSize: 13,
+  },
+  modalActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    backgroundColor: '#334155',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: '#CBD5E1',
+    fontWeight: '600',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+
+  // SUCCESS MODAL
+  modalSuccessContent: {
+    backgroundColor: '#1E293B',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+    borderColor: '#10B981',
+    borderWidth: 1,
+  },
+  successModalTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  successModalDesc: {
+    color: '#94A3B8',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  ticketBox: {
+    backgroundColor: '#0F172A',
+    borderRadius: 12,
+    padding: 14,
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 16,
+    borderStyle: 'dashed',
+    borderColor: '#38BDF8',
+    borderWidth: 1,
+  },
+  ticketLabel: {
+    color: '#64748B',
+    fontSize: 11,
+  },
+  ticketCode: {
+    color: '#38BDF8',
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 2,
+    marginVertical: 4,
+  },
+  ticketTotal: {
+    color: '#10B981',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  successDoneBtn: {
+    backgroundColor: '#10B981',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
   },
-  logoutButtonText: {
+  successDoneText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 15,
