@@ -266,35 +266,40 @@ export default function AppScreen() {
                   </Text>
                 )}
               </TouchableOpacity>
-            </View>
 
-            {/* Accesos rápidos */}
-            {isLogin && (
-              <View style={styles.quickCard}>
-                <Text style={styles.quickTitle}>Accesos de prueba rápidos:</Text>
-                <View style={styles.quickRow}>
-                  <TouchableOpacity
-                    style={styles.quickBtn}
-                    onPress={() => fillCredentials('huesped@aurahotel.pe', 'Huésped')}
-                  >
-                    <Text style={styles.quickBtnText}>👤 Huésped</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.quickBtn}
-                    onPress={() => fillCredentials('recepcion@aurahotel.pe', 'Recepción')}
-                  >
-                    <Text style={styles.quickBtnText}>🛎️ Recepción</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.quickBtn, styles.quickBtnAdmin]}
-                    onPress={() => fillCredentials('admin@aurahotel.pe', 'Admin')}
-                  >
-                    <Text style={[styles.quickBtnText, styles.quickBtnAdminText]}>🛡️ Admin</Text>
-                  </TouchableOpacity>
+              {/* Accesos rápidos dentro del mismo card */}
+              {isLogin && (
+                <View style={styles.quickAccessSection}>
+                  <View style={styles.quickDivider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.quickTitle}>Accesos de prueba rápidos</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+
+                  <View style={styles.quickRow}>
+                    <TouchableOpacity
+                      style={styles.quickBtn}
+                      onPress={() => fillCredentials('huesped@aurahotel.pe', 'Huésped')}
+                    >
+                      <Text style={styles.quickBtnText}>👤 Huésped</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.quickBtn}
+                      onPress={() => fillCredentials('recepcion@aurahotel.pe', 'Recepción')}
+                    >
+                      <Text style={styles.quickBtnText}>🛎️ Recepción</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.quickBtn, styles.quickBtnAdmin]}
+                      onPress={() => fillCredentials('admin@aurahotel.pe', 'Admin')}
+                    >
+                      <Text style={[styles.quickBtnText, styles.quickBtnAdminText]}>🛡️ Admin</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.quickHint}>Contraseña única: Aura2026!</Text>
                 </View>
-                <Text style={styles.quickHint}>Clave única: Aura2026!</Text>
-              </View>
-            )}
+              )}
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -657,24 +662,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.5,
   },
-  quickCard: {
-    marginTop: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
+  quickAccessSection: {
+    marginTop: 22,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  quickDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
   },
   quickTitle: {
-    color: '#64748B',
-    fontSize: 12,
+    color: '#94A3B8',
+    fontSize: 11,
     fontWeight: '700',
-    marginBottom: 10,
-    textAlign: 'center',
+    paddingHorizontal: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   quickRow: {
     flexDirection: 'row',
@@ -682,7 +692,7 @@ const styles = StyleSheet.create({
   },
   quickBtn: {
     flex: 1,
-    backgroundColor: '#F1F5F9', // Plomo suave
+    backgroundColor: '#F8FAFC',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -690,17 +700,17 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   quickBtnText: {
-    color: '#334155',
+    color: '#475569',
     fontSize: 12,
     fontWeight: '700',
   },
   quickBtnAdmin: {
     backgroundColor: '#FFF7ED',
-    borderColor: '#FDBA74',
+    borderColor: '#FED7AA',
     borderWidth: 1,
   },
   quickBtnAdminText: {
-    color: '#C2410C',
+    color: '#EA580C',
   },
   quickHint: {
     color: '#94A3B8',
