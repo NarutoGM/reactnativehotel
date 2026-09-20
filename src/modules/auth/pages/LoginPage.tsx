@@ -88,9 +88,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerClassName="p-5 justify-center"
           showsVerticalScrollIndicator={false}
-          className="p-5 justify-center"
         >
           {/* Header Brand */}
           <View style={styles.brandBox} className="items-center my-4">
