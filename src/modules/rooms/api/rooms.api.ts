@@ -139,9 +139,11 @@ export const roomsApi = {
   },
 
   async uploadRoomImage(roomId: string, imageUri: string): Promise<{ success: boolean; room?: Room; error?: string }> {
-    const filename = imageUri.split('/').pop() || 'room.jpg';
+    const filename = imageUri.split('/').pop() || `room_${Date.now()}.jpg`;
     const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
+
+    console.log(`[Frontend uploadRoomImage] roomId=${roomId}, uri=${imageUri}, filename=${filename}, type=${type}`);
 
     const formData = new FormData();
     formData.append('file', {
@@ -151,6 +153,7 @@ export const roomsApi = {
     } as any);
 
     const res = await httpClient.postFormData<Room>(`/rooms/${roomId}/image`, formData);
+    console.log(`[Frontend uploadRoomImage Result]`, res);
     return {
       success: res.success,
       room: res.data,

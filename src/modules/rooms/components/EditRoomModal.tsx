@@ -153,12 +153,16 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
     // Si el usuario seleccionó un archivo de imagen local, subirlo a Firebase Storage vía backend
     if (selectedFileUri && createdOrUpdatedRoomId) {
+      console.log(`[EditRoomModal] Subiendo archivo ${selectedFileUri} para habitación ${createdOrUpdatedRoomId}`);
       const uploadRes = await roomsApi.uploadRoomImage(createdOrUpdatedRoomId, selectedFileUri);
       if (!uploadRes.success) {
+        console.error(`[EditRoomModal Error Subida]`, uploadRes.error);
         Alert.alert(
-          'Habitación Guardada',
-          'La habitación se guardó pero hubo un problema al subir la foto a Firebase.'
+          'Habitación Guardada con Advertencia',
+          `La habitación se guardó pero hubo un problema al subir la foto a Firebase: \n\n${uploadRes.error || 'Error desconocido'}`
         );
+      } else {
+        console.log(`[EditRoomModal Éxito Subida]`, uploadRes.room?.imageUrl);
       }
     }
 
