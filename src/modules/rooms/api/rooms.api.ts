@@ -51,6 +51,33 @@ export interface BookingPayload {
   totalAmount: number;
 }
 
+export interface CreateRoomPayload {
+  id?: string;
+  roomNumber: string;
+  title: string;
+  type: string;
+  floor: number;
+  capacity: number;
+  pricePerNight: number;
+  isAvailable?: boolean;
+  bedType?: string;
+  surfaceAreaM2?: number;
+  imageUrl?: string;
+}
+
+export interface UpdateRoomPayload {
+  roomNumber?: string;
+  title?: string;
+  type?: string;
+  floor?: number;
+  capacity?: number;
+  pricePerNight?: number;
+  isAvailable?: boolean;
+  bedType?: string;
+  surfaceAreaM2?: number;
+  imageUrl?: string;
+}
+
 export const roomsApi = {
   async searchRooms(params: SearchRoomsParams): Promise<{ success: boolean; rooms: Room[]; error?: string }> {
     const res = await httpClient.get<Room[]>('/rooms', {
@@ -66,11 +93,55 @@ export const roomsApi = {
     };
   },
 
+  async getAllRoomsForAdmin(): Promise<{ success: boolean; rooms: Room[]; error?: string }> {
+    const res = await httpClient.get<Room[]>('/rooms/admin/all');
+    return {
+      success: res.success,
+      rooms: Array.isArray(res.data) ? res.data : [],
+      error: res.error,
+    };
+  },
+
   async getRoomById(id: string): Promise<{ success: boolean; room?: Room; error?: string }> {
     const res = await httpClient.get<Room>(`/rooms/${id}`);
     return {
       success: res.success,
       room: res.data,
+      error: res.error,
+    };
+  },
+
+  async createRoom(payload: CreateRoomPayload): Promise<{ success: boolean; room?: Room; error?: string }> {
+    const res = await httpClient.post<Room>('/rooms', payload);
+    return {
+      success: res.success,
+      room: res.data,
+      error: res.error,
+    };
+  },
+
+  async toggleRoomAvailability(id: string, isAvailable?: boolean): Promise<{ success: boolean; room?: Room; error?: string }> {
+    const res = await httpClient.patch<Room>(`/rooms/${id}/toggle`, isAvailable !== undefined ? { isAvailable } : {});
+    return {
+      success: res.success,
+      room: res.data,
+      error: res.error,
+    };
+  },
+
+  async updateRoom(id: string, payload: UpdateRoomPayload): Promise<{ success: boolean; room?: Room; error?: string }> {
+    const res = await httpClient.patch<Room>(`/rooms/${id}`, payload);
+    return {
+      success: res.success,
+      room: res.data,
+      error: res.error,
+    };
+  },
+
+  async deleteRoom(id: string): Promise<{ success: boolean; error?: string }> {
+    const res = await httpClient.delete(`/rooms/${id}`);
+    return {
+      success: res.success,
       error: res.error,
     };
   },

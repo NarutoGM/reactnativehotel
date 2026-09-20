@@ -3,14 +3,15 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export type MainTabType = 'rooms' | 'bookings' | 'profile';
+export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: MainTabType;
+  isAdmin?: boolean;
   onTabChange: (tab: MainTabType) => void;
 }
 
-export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChange }) => {
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, onTabChange }) => {
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 14);
 
@@ -45,6 +46,24 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChan
           Reservas
         </Text>
       </TouchableOpacity>
+
+      {/* Pestaña de Gestión de Habitaciones para Admin */}
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.tabBtn}
+          onPress={() => onTabChange('adminRooms')}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={activeTab === 'adminRooms' ? 'settings' : 'settings-outline'}
+            size={22}
+            color={activeTab === 'adminRooms' ? '#0F172A' : '#94A3B8'}
+          />
+          <Text style={[styles.tabLabel, activeTab === 'adminRooms' && styles.tabLabelActive]}>
+            Gestión
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.tabBtn}

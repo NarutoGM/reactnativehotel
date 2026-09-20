@@ -5,6 +5,7 @@ import { User } from '@/modules/auth/api/auth.api';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ProfilePage } from '@/modules/auth/pages/ProfilePage';
 import { RoomsPage } from '@/modules/rooms/pages/RoomsPage';
+import { AdminRoomsPage } from '@/modules/rooms/pages/AdminRoomsPage';
 import { BookingsPage } from '@/modules/rooms/pages/BookingsPage';
 import { BottomNavBar, MainTabType } from '@/components/BottomNavBar';
 import { UserMenuHeader } from '@/components/UserMenuHeader';
@@ -18,7 +19,8 @@ export default function AppScreen() {
     return <LoginPage onAuthSuccess={(user) => setCurrentUser(user)} />;
   }
 
-  // Usuario autenticado
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'RECEPTIONIST';
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container} className="flex-1 bg-slate-100">
       {/* Top Header con Avatar de Iniciales y Tooltip interactivo */}
@@ -37,13 +39,14 @@ export default function AppScreen() {
           />
         )}
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
+        {activeTab === 'adminRooms' && <AdminRoomsPage />}
         {activeTab === 'profile' && (
           <ProfilePage currentUser={currentUser} onLogout={() => setCurrentUser(null)} />
         )}
       </View>
 
-      {/* Tab Navigation inferior pegado abajo */}
-      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Tab Navigation inferior con pestaña de Gestión para Admin */}
+      <BottomNavBar activeTab={activeTab} isAdmin={isAdmin} onTabChange={setActiveTab} />
     </SafeAreaView>
   );
 }
