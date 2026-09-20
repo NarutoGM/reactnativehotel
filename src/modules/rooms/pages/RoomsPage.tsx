@@ -5,7 +5,6 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
-  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '../../auth/api/auth.api';
@@ -13,18 +12,21 @@ import { roomsApi, Room } from '../api/rooms.api';
 import { RoomCard } from '../components/RoomCard';
 import { DateFilterBar } from '../components/DateFilterBar';
 import { BookingModals } from '../components/BookingModals';
+import { RoomDetailModal } from '../components/RoomDetailModal';
 
 interface RoomsPageProps {
   currentUser: User;
+  onNavigateToBookings?: () => void;
 }
 
-export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
+export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToBookings }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [capacity, setCapacity] = useState('2');
   const [checkIn, setCheckIn] = useState('2026-09-20');
   const [checkOut, setCheckOut] = useState('2026-09-23');
 
+  const [detailRoom, setDetailRoom] = useState<Room | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccessModal, setBookingSuccessModal] = useState<any | null>(null);
@@ -73,7 +75,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
       const bData = res.booking;
       setSelectedRoom(null);
       setBookingSuccessModal({
-        bookingId: bData?.id ? `AG-${bData.id.slice(0, 6).toUpperCase()}` : 'AG-78921',
+        bookingId: bData?.bookingId || (bData?.id ? `AG-${bData.id.slice(0, 6).toUpperCase()}` : 'AG-78921'),
         roomTitle: selectedRoom.title,
         totalAmount: total,
       });
@@ -84,7 +86,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-slate-100">
       <DateFilterBar
         checkIn={checkIn}
         checkOut={checkOut}
@@ -95,24 +97,30 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
         onSearch={() => fetchRooms()}
       />
 
-      <View style={styles.resultsContainer}>
-        <View style={styles.resultsHeaderRow}>
-          <Text style={styles.resultsTitle}>
+      <View className="flex-1 px-3.5">
+        <View className="flex-row justify-between items-center mb-2.5">
+          <Text className="text-slate-900 text-[16px] font-black">
             Habitaciones Disponibles ({rooms.length})
           </Text>
-          <Text style={styles.resultsSubtitle}>Para {capacity} personas</Text>
+          <Text className="text-slate-500 text-[12px] font-medium">
+            Para {capacity} personas
+          </Text>
         </View>
 
         {roomsLoading ? (
-          <View style={styles.loadingBox}>
+          <View className="flex-1 justify-center items-center py-12">
             <ActivityIndicator size="large" color="#0F172A" />
-            <Text style={styles.loadingText}>Buscando disponibilidad...</Text>
+            <Text className="text-slate-500 mt-2.5 text-[13px] font-medium">
+              Buscando disponibilidad en Aura Hotel...
+            </Text>
           </View>
         ) : rooms.length === 0 ? (
-          <View style={styles.emptyBox}>
+          <View className="flex-1 justify-center items-center px-8 py-10">
             <Ionicons name="bed-outline" size={44} color="#94A3B8" />
-            <Text style={styles.emptyTitle}>No se encontraron habitaciones</Text>
-            <Text style={styles.emptyDesc}>
+            <Text className="text-slate-900 text-[16px] font-bold mt-2.5">
+              No se encontraron habitaciones
+            </Text>
+            <Text className="text-slate-500 text-center text-[12px] mt-1">
               Prueba cambiando las fechas o reduciendo la cantidad de huéspedes.
             </Text>
           </View>
@@ -120,15 +128,27 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
           <FlatList
             data={rooms}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
+            contentContainerClassName="pb-6"
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <RoomCard room={item} onBook={(r) => setSelectedRoom(r)} />
+              <RoomCard
+                room={item}
+                onPress={(r) => setDetailRoom(r)}
+                onBook={(r) => setSelectedRoom(r)}
+              />
             )}
           />
         )}
       </View>
 
+      {/* MODAL DETALLES COMPLETOS DE HABITACIÓN */}
+      <RoomDetailModal
+        room={detailRoom}
+        onClose={() => setDetailRoom(null)}
+        onBook={(r) => setSelectedRoom(r)}
+      />
+
+      {/* MODAL CONFIRMACIÓN DE RESERVA Y COMPROBANTE */}
       <BookingModals
         selectedRoom={selectedRoom}
         checkIn={checkIn}
@@ -138,69 +158,11 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser }) => {
         bookingSuccessModal={bookingSuccessModal}
         onCloseBooking={() => setSelectedRoom(null)}
         onConfirmBooking={handleBookRoom}
-        onCloseSuccess={() => setBookingSuccessModal(null)}
+        onCloseSuccess={() => {
+          setBookingSuccessModal(null);
+          if (onNavigateToBookings) onNavigateToBookings();
+        }}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  resultsContainer: {
-    flex: 1,
-    paddingHorizontal: 14,
-  },
-  resultsHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  resultsTitle: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  resultsSubtitle: {
-    color: '#64748B',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  listContent: {
-    paddingBottom: 24,
-    gap: 14,
-  },
-  loadingBox: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#64748B',
-    marginTop: 10,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  emptyBox: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 40,
-  },
-  emptyTitle: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  emptyDesc: {
-    color: '#64748B',
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop: 4,
-  },
-});

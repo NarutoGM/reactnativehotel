@@ -1,181 +1,89 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Room } from '../api/rooms.api';
 
 interface RoomCardProps {
   room: Room;
+  onPress: (room: Room) => void;
   onBook: (room: Room) => void;
 }
 
-export const RoomCard: React.FC<RoomCardProps> = ({ room, onBook }) => {
+export const RoomCard: React.FC<RoomCardProps> = ({ room, onPress, onBook }) => {
   const defaultImage = room.type.toLowerCase().includes('suite')
     ? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80'
     : 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80';
 
   return (
-    <View style={styles.card}>
-      <Image
-        source={{ uri: room.imageUrl || defaultImage }}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>{room.roomNumber}</Text>
+    <TouchableOpacity
+      className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm mb-4"
+      activeOpacity={0.88}
+      onPress={() => onPress(room)}
+    >
+      <View className="relative">
+        <Image
+          source={{ uri: room.imageUrl || defaultImage }}
+          className="w-full h-44"
+          resizeMode="cover"
+        />
+        <View className="absolute top-2.5 left-2.5 bg-slate-900/85 px-2.5 py-1 rounded-lg">
+          <Text className="text-white text-[11px] font-bold">Hab. {room.roomNumber}</Text>
+        </View>
       </View>
 
-      <View style={styles.details}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>{room.title}</Text>
-          <View style={styles.ratingRow}>
+      <View className="p-4">
+        <View className="flex-row justify-between items-center">
+          <Text className="text-[17px] font-black text-slate-900 flex-1">
+            {room.title}
+          </Text>
+          <View className="flex-row items-center gap-1">
             <Ionicons name="star" size={14} color="#D97706" />
-            <Text style={styles.ratingText}>{room.rating || 4.8}</Text>
+            <Text className="text-amber-600 font-bold text-[13px]">{room.rating || 4.8}</Text>
           </View>
         </View>
 
-        <Text style={styles.meta}>
+        <Text className="text-slate-500 text-[12px] mt-1 font-medium">
           Piso {room.floor} · {room.bedType} · {room.surfaceAreaM2} m²
         </Text>
 
-        <View style={styles.chipsRow}>
-          <View style={styles.chip}>
-            <Ionicons name="people-outline" size={13} color="#475569" style={{ marginRight: 4 }} />
-            <Text style={styles.chipText}>Hasta {room.capacity} pers.</Text>
+        <View className="flex-row flex-wrap gap-1.5 my-2.5">
+          <View className="flex-row items-center bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+            <Ionicons name="people-outline" size={12} color="#475569" style={{ marginRight: 4 }} />
+            <Text className="text-slate-700 text-[11px] font-semibold">Hasta {room.capacity} pers.</Text>
           </View>
-          <View style={styles.chip}>
-            <Ionicons name="eye-outline" size={13} color="#475569" style={{ marginRight: 4 }} />
-            <Text style={styles.chipText}>Vista Exterior</Text>
+          <View className="flex-row items-center bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+            <Ionicons name="eye-outline" size={12} color="#475569" style={{ marginRight: 4 }} />
+            <Text className="text-slate-700 text-[11px] font-semibold">Vista Exterior</Text>
           </View>
-          <View style={styles.chip}>
-            <Ionicons name="wifi-outline" size={13} color="#475569" style={{ marginRight: 4 }} />
-            <Text style={styles.chipText}>Wi-Fi Gratis</Text>
+          <View className="flex-row items-center bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+            <Ionicons name="wifi-outline" size={12} color="#475569" style={{ marginRight: 4 }} />
+            <Text className="text-slate-700 text-[11px] font-semibold">Wi-Fi</Text>
           </View>
         </View>
 
-        <View style={styles.footer}>
+        <View className="flex-row justify-between items-center pt-2.5 border-t border-slate-100">
           <View>
-            <Text style={styles.priceLabel}>Precio por noche</Text>
-            <Text style={styles.priceValue}>S/ {room.pricePerNight}</Text>
+            <Text className="text-slate-500 text-[10px] font-semibold">Precio por noche</Text>
+            <Text className="text-slate-900 text-[19px] font-black">S/ {room.pricePerNight}</Text>
           </View>
 
-          <TouchableOpacity style={styles.bookBtn} onPress={() => onBook(room)}>
-            <Text style={styles.bookBtnText}>Reservar Ahora</Text>
-          </TouchableOpacity>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              className="bg-slate-100 border border-slate-300 px-3 py-2.5 rounded-xl justify-center items-center"
+              onPress={() => onPress(room)}
+            >
+              <Text className="text-slate-700 text-[12px] font-bold">Ver Detalles</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="bg-slate-900 px-4 py-2.5 rounded-xl justify-center items-center shadow-sm"
+              onPress={() => onBook(room)}
+            >
+              <Text className="text-white text-[12px] font-bold">Reservar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-    shadowColor: '#64748B',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  image: {
-    width: '100%',
-    height: 160,
-  },
-  badge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  details: {
-    padding: 14,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0F172A',
-    flex: 1,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  ratingText: {
-    color: '#D97706',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  meta: {
-    color: '#64748B',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginVertical: 10,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-  },
-  chipText: {
-    color: '#475569',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 10,
-    borderTopColor: '#F1F5F9',
-    borderTopWidth: 1,
-  },
-  priceLabel: {
-    color: '#64748B',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  priceValue: {
-    color: '#0F172A',
-    fontSize: 19,
-    fontWeight: '900',
-  },
-  bookBtn: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  bookBtnText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-});

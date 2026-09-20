@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface DateFilterBarProps {
@@ -22,20 +22,22 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   onSearch,
 }) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.headerTitleRow}>
+    <View className="bg-white m-3.5 p-4 rounded-2xl border border-slate-200 shadow-sm">
+      <View className="flex-row items-center gap-1.5 mb-3">
         <Ionicons name="calendar" size={16} color="#0F172A" />
-        <Text style={styles.title}>Fechas y Huéspedes</Text>
+        <Text className="text-[15px] font-black text-slate-900">
+          Fechas y Huéspedes
+        </Text>
       </View>
 
-      <View style={styles.inputsRow}>
-        <View style={{ flex: 1 }}>
-          <View style={styles.labelRow}>
-            <Ionicons name="calendar-outline" size={12} color="#64748B" />
-            <Text style={styles.label}>Check-in</Text>
+      <View className="flex-row gap-2">
+        <View className="flex-1">
+          <View className="flex-row items-center gap-1 mb-1">
+            <Ionicons name="calendar-outline" size={11} color="#64748B" />
+            <Text className="text-slate-500 text-[11px] font-bold">Check-in</Text>
           </View>
           <TextInput
-            style={styles.input}
+            className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 text-slate-900 text-[12px]"
             value={checkIn}
             onChangeText={onCheckInChange}
             placeholder="YYYY-MM-DD"
@@ -43,13 +45,13 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
           />
         </View>
 
-        <View style={{ flex: 1 }}>
-          <View style={styles.labelRow}>
-            <Ionicons name="calendar-outline" size={12} color="#64748B" />
-            <Text style={styles.label}>Check-out</Text>
+        <View className="flex-1">
+          <View className="flex-row items-center gap-1 mb-1">
+            <Ionicons name="calendar-outline" size={11} color="#64748B" />
+            <Text className="text-slate-500 text-[11px] font-bold">Check-out</Text>
           </View>
           <TextInput
-            style={styles.input}
+            className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 text-slate-900 text-[12px]"
             value={checkOut}
             onChangeText={onCheckOutChange}
             placeholder="YYYY-MM-DD"
@@ -57,13 +59,13 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
           />
         </View>
 
-        <View style={{ width: 85 }}>
-          <View style={styles.labelRow}>
-            <Ionicons name="people-outline" size={12} color="#64748B" />
-            <Text style={styles.label}>Huéspedes</Text>
+        <View className="w-20">
+          <View className="flex-row items-center gap-1 mb-1">
+            <Ionicons name="people-outline" size={11} color="#64748B" />
+            <Text className="text-slate-500 text-[11px] font-bold">Pers.</Text>
           </View>
           <TextInput
-            style={styles.input}
+            className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 text-slate-900 text-[12px] text-center"
             value={capacity}
             onChangeText={onCapacityChange}
             keyboardType="numeric"
@@ -73,76 +75,15 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
         </View>
       </View>
 
-      <TouchableOpacity style={styles.searchBtn} onPress={onSearch}>
-        <Ionicons name="filter-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-        <Text style={styles.searchBtnText}>Aplicar Filtros y Buscar</Text>
+      <TouchableOpacity
+        className="flex-row justify-center items-center bg-slate-900 rounded-xl py-3 mt-3 shadow-sm active:bg-slate-800"
+        onPress={onSearch}
+      >
+        <Ionicons name="filter-outline" size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+        <Text className="text-white font-bold text-[13px]">
+          Aplicar Filtros y Buscar
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFFFFF',
-    margin: 14,
-    padding: 16,
-    borderRadius: 16,
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-    shadowColor: '#64748B',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  inputsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  label: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#CBD5E1',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: '#0F172A',
-    fontSize: 12,
-  },
-  searchBtn: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: '#0F172A',
-    borderRadius: 8,
-    paddingVertical: 11,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  searchBtnText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-});

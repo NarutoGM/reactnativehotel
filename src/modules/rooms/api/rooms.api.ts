@@ -22,6 +22,24 @@ export interface Room {
   imageUrl?: string | null;
 }
 
+export interface Booking {
+  id: string;
+  bookingId: string;
+  roomId: string;
+  userId?: string | null;
+  guestName: string;
+  guestEmail: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  guestsCount: number;
+  status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
+  totalAmount: number;
+  voucherFileName?: string | null;
+  createdAt: string;
+  room?: Room;
+}
+
 export interface SearchRoomsParams {
   capacity?: number;
   checkIn?: string;
@@ -65,7 +83,20 @@ export const roomsApi = {
     }
   },
 
-  async createBooking(payload: BookingPayload): Promise<{ success: boolean; booking?: any; error?: string }> {
+  async getRoomById(id: string): Promise<{ success: boolean; room?: Room; error?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/rooms/${id}`);
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Error al obtener datos de la habitación.' };
+      }
+      return { success: true, room: data };
+    } catch (err: any) {
+      return { success: false, error: `Error de conexión (${API_BASE_URL}).` };
+    }
+  },
+
+  async createBooking(payload: BookingPayload): Promise<{ success: boolean; booking?: Booking; error?: string }> {
     try {
       const response = await fetch(`${API_BASE_URL}/rooms/book`, {
         method: 'POST',
@@ -82,6 +113,53 @@ export const roomsApi = {
       return { success: true, booking: data };
     } catch (err: any) {
       return { success: false, error: `Error de conexión con el backend (${API_BASE_URL}).` };
+    }
+  },
+
+  async getBookings(userId?: string): Promise<{ success: boolean; bookings: Booking[]; error?: string }> {
+    try {
+      const url = userId
+        ? `${API_BASE_URL}/rooms/bookings/all?userId=${userId}`
+        : `${API_BASE_URL}/rooms/bookings/all`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, bookings: [], error: data.message || 'Error al obtener reservas.' };
+      }
+
+      return { success: true, bookings: Array.isArray(data) ? data : [] };
+    } catch (err: any) {
+      return { success: false, bookings: [], error: `Error de conexión (${API_BASE_URL}).` };
+    }
+  },
+
+  async uploadVoucher(bookingId: string, imageUri: string): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+    try {
+      const filename = imageUri.split('/').pop() || 'voucher.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
+
+      const response = await fetch(`${API_BASE_URL}/rooms/bookings/${bookingId}/voucher`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Error al subir el voucher.' };
+      }
+
+      return { success: true, booking: data };
+    } catch (err: any) {
+      return { success: false, error: `Error al conectar y subir el voucher (${API_BASE_URL}).` };
     }
   },
 };

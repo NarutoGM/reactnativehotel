@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '@/modules/auth/api/auth.api';
@@ -13,37 +13,47 @@ export default function AppScreen() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<MainTabType>('rooms');
 
-  // Si no ha iniciado sesión -> Mostramos la página modular de Login / Register
+  // Si no ha iniciado sesión -> Mostramos la página de Login / Register
   if (!currentUser) {
     return <LoginPage onAuthSuccess={(user) => setCurrentUser(user)} />;
   }
 
-  // Usuario autenticado -> Header + Vista activa según Tab + Barra inferior de navegación
+  // Usuario autenticado
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-slate-100">
       {/* Top Header */}
-      <View style={styles.headerBar}>
-        <View style={styles.brandRow}>
-          <View style={styles.headerIconCircle}>
+      <View className="flex-row justify-between items-center px-4 py-3.5 bg-white border-b border-slate-200">
+        <View className="flex-row items-center gap-2.5">
+          <View className="w-9 h-9 rounded-full bg-slate-100 justify-center items-center border border-slate-200">
             <Ionicons name="business" size={18} color="#0F172A" />
           </View>
           <View>
-            <Text style={styles.headerHotel}>AURA GRAND HOTEL</Text>
-            <Text style={styles.headerUser}>
+            <Text className="text-[11px] text-slate-500 font-bold tracking-wider">
+              AURA GRAND HOTEL
+            </Text>
+            <Text className="text-[17px] font-black text-slate-900">
               Hola, {currentUser.fullName?.split(' ')[0] || 'Invitado'}
             </Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.logoutPill} onPress={() => setCurrentUser(null)}>
-          <Ionicons name="log-out-outline" size={15} color="#DC2626" style={{ marginRight: 4 }} />
-          <Text style={styles.logoutPillText}>Salir</Text>
+        <TouchableOpacity
+          className="flex-row items-center bg-red-50 border border-red-200 px-3 py-1.5 rounded-full"
+          onPress={() => setCurrentUser(null)}
+        >
+          <Ionicons name="log-out-outline" size={14} color="#DC2626" style={{ marginRight: 4 }} />
+          <Text className="text-red-600 font-bold text-[12px]">Salir</Text>
         </TouchableOpacity>
       </View>
 
       {/* Vistas según el Tab seleccionado */}
-      <View style={styles.content}>
-        {activeTab === 'rooms' && <RoomsPage currentUser={currentUser} />}
+      <View className="flex-1">
+        {activeTab === 'rooms' && (
+          <RoomsPage
+            currentUser={currentUser}
+            onNavigateToBookings={() => setActiveTab('bookings')}
+          />
+        )}
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
         {activeTab === 'profile' && (
           <ProfilePage currentUser={currentUser} onLogout={() => setCurrentUser(null)} />
@@ -55,64 +65,3 @@ export default function AppScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F1F5F9', // Fondo blanco con plomo elegante
-  },
-  headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
-    borderBottomColor: '#E2E8F0',
-    borderBottomWidth: 1,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  headerIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  headerHotel: {
-    fontSize: 11,
-    color: '#64748B',
-    fontWeight: 'bold',
-    letterSpacing: 0.8,
-  },
-  headerUser: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  logoutPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FCA5A5',
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  logoutPillText: {
-    color: '#DC2626',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  content: {
-    flex: 1,
-  },
-});
