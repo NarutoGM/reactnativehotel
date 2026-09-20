@@ -103,41 +103,57 @@ class HttpClient {
   }
 
   /**
-   * Petición HTTP POST FormData (para subida de archivos / vouchers)
+   * Petición HTTP POST FormData (para subida de archivos / imágenes / vouchers)
+   * Usa XMLHttpRequest para compatibilidad total y robusta con FormData multipart en React Native.
    */
-  async postFormData<T>(endpoint: string, formData: FormData): Promise<HttpResponse<T>> {
-    try {
-      const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-        },
-        body: formData,
-      });
-
-      const responseText = await response.text();
-      let data: any;
+  postFormData<T>(endpoint: string, formData: FormData): Promise<HttpResponse<T>> {
+    return new Promise((resolve) => {
       try {
-        data = JSON.parse(responseText);
-      } catch {
-        data = { message: responseText };
-      }
+        const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Accept', 'application/json');
 
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data?.message || `Error del servidor (${response.status})`,
+        xhr.onload = () => {
+          let data: any;
+          try {
+            data = JSON.parse(xhr.responseText);
+          } catch {
+            data = { message: xhr.responseText };
+          }
+
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({ success: true, data });
+          } else {
+            resolve({
+              success: false,
+              error: data?.message || `Error del servidor (${xhr.status})`,
+            });
+          }
         };
-      }
 
-      return { success: true, data };
-    } catch (err: any) {
-      return {
-        success: false,
-        error: `Error al conectar con el backend (${this.baseUrl}): ${err?.message || 'Error de red'}`,
-      };
-    }
+        xhr.onerror = () => {
+          resolve({
+            success: false,
+            error: `Error de conexión al subir el archivo al backend (${this.baseUrl}).`,
+          });
+        };
+
+        xhr.ontimeout = () => {
+          resolve({
+            success: false,
+            error: `Tiempo de espera agotado al conectar con el backend (${this.baseUrl}).`,
+          });
+        };
+
+        xhr.send(formData);
+      } catch (err: any) {
+        resolve({
+          success: false,
+          error: `Error al procesar archivo: ${err?.message || 'Desconocido'}`,
+        });
+      }
+    });
   }
 
   /**

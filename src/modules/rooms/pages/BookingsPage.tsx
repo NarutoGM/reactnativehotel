@@ -57,7 +57,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions?.Images || 'Images',
+        mediaTypes: ['images'],
         allowsEditing: true,
         quality: 0.8,
       });
