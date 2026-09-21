@@ -25,7 +25,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, 
         <Ionicons
           name={activeTab === 'rooms' ? 'bed' : 'bed-outline'}
           size={22}
-          color={activeTab === 'rooms' ? '#0F172A' : '#94A3B8'}
+          color={activeTab === 'rooms' ? '#488C8C' : '#94A3B8'}
         />
         <Text style={[styles.tabLabel, activeTab === 'rooms' && styles.tabLabelActive]}>
           Habitaciones
@@ -40,7 +40,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, 
         <Ionicons
           name={activeTab === 'bookings' ? 'receipt' : 'receipt-outline'}
           size={22}
-          color={activeTab === 'bookings' ? '#0F172A' : '#94A3B8'}
+          color={activeTab === 'bookings' ? '#488C8C' : '#94A3B8'}
         />
         <Text style={[styles.tabLabel, activeTab === 'bookings' && styles.tabLabelActive]}>
           Reservas
@@ -57,7 +57,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, 
           <Ionicons
             name={activeTab === 'adminRooms' ? 'settings' : 'settings-outline'}
             size={22}
-            color={activeTab === 'adminRooms' ? '#0F172A' : '#94A3B8'}
+            color={activeTab === 'adminRooms' ? '#488C8C' : '#94A3B8'}
           />
           <Text style={[styles.tabLabel, activeTab === 'adminRooms' && styles.tabLabelActive]}>
             Gestión
@@ -73,7 +73,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, 
         <Ionicons
           name={activeTab === 'profile' ? 'person' : 'person-outline'}
           size={22}
-          color={activeTab === 'profile' ? '#0F172A' : '#94A3B8'}
+          color={activeTab === 'profile' ? '#488C8C' : '#94A3B8'}
         />
         <Text style={[styles.tabLabel, activeTab === 'profile' && styles.tabLabelActive]}>
           Perfil
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   tabLabelActive: {
-    color: '#0F172A',
+    color: '#488C8C',
     fontWeight: '800',
   },
 });

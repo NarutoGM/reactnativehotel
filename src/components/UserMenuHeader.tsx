@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { User } from '@/modules/auth/api/auth.api';
 
 interface UserMenuHeaderProps {
@@ -34,27 +35,45 @@ export const UserMenuHeader: React.FC<UserMenuHeaderProps> = ({
     <View className="flex-row justify-between items-center px-4 py-3 bg-white border-b border-slate-200">
       {/* Brand & Greetings */}
       <View className="flex-row items-center gap-2.5">
-        <View className="w-9 h-9 rounded-full bg-slate-100 justify-center items-center border border-slate-200">
-          <Ionicons name="business" size={18} color="#0F172A" />
+        <View
+          className="w-9 h-9 rounded-full justify-center items-center border"
+          style={{ backgroundColor: '#EBF4F4', borderColor: '#C3DFDF' }}
+        >
+          <Ionicons name="business" size={18} color="#488C8C" />
         </View>
         <View>
-          <Text className="text-[11px] text-slate-500 font-bold tracking-wider">
+          <Text className="text-[14px] font-black text-slate-900 tracking-wider">
             AURA GRAND HOTEL
-          </Text>
-          <Text className="text-[16px] font-black text-slate-900">
-            Hola, {currentUser.fullName?.split(' ')[0] || 'Invitado'}
           </Text>
         </View>
       </View>
 
-      {/* Avatar Circle with Initials at the Right */}
+      {/* Avatar Circle with Linear Gradient and Initials */}
       <TouchableOpacity
-        className="w-10 h-10 rounded-full bg-slate-900 justify-center items-center shadow-sm border border-slate-700 active:opacity-80"
         onPress={() => setMenuVisible(true)}
+        activeOpacity={0.82}
       >
-        <Text className="text-white font-black text-[14px] tracking-wider">
-          {initials}
-        </Text>
+        <LinearGradient
+          colors={['#5FA7A7', '#488C8C', '#2E6666']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#488C8C',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.35,
+            shadowRadius: 5,
+            elevation: 4,
+          }}
+        >
+          <Text className="text-white font-black text-[13.5px] tracking-wider">
+            {initials}
+          </Text>
+        </LinearGradient>
       </TouchableOpacity>
 
       {/* Tooltip / Popup Natural y Limpio */}

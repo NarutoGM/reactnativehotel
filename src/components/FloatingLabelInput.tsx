@@ -58,7 +58,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
 
   const labelColor = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#64748B', isFocused ? '#0F172A' : '#64748B'],
+    outputRange: ['#64748B', isFocused ? '#488C8C' : '#64748B'],
   });
 
   const inputPaddingLeft = iconName ? 38 : 14;
@@ -78,7 +78,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
             <Ionicons
               name={iconName}
               size={17}
-              color={isFocused ? '#0F172A' : '#94A3B8'}
+              color={isFocused ? '#488C8C' : '#94A3B8'}
             />
           </View>
         )}
@@ -116,7 +116,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword && !showPassword}
           placeholder=""
-          selectionColor="#0F172A"
+          selectionColor="#488C8C"
           placeholderTextColor="transparent"
         />
 
@@ -130,7 +130,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
             <Ionicons
               name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={18}
-              color={isFocused ? '#0F172A' : '#64748B'}
+              color={isFocused ? '#488C8C' : '#64748B'}
             />
           </TouchableOpacity>
         )}
@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
   },
   containerFocused: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#0F172A',
-    shadowColor: '#0F172A',
+    borderColor: '#488C8C',
+    shadowColor: '#488C8C',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2,
   },

@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { authApi, User } from '../api/auth.api';
 import { QuickTestButtons } from '../components/QuickTestButtons';
 import { FloatingLabelInput } from '../../../components/FloatingLabelInput';
+import { LuxuryButton } from '../../../components/LuxuryButton';
 
 const { width } = Dimensions.get('window');
 
@@ -132,17 +133,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
               </Text>
             </View>
 
-            {/* Notificaciones de Error / Éxito */}
+            {/* Notificaciones de Error / Éxito (solo texto limpio sin caja/sección) */}
             {authError ? (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorText}>{authError}</Text>
-              </View>
+              <Text style={styles.errorText}>{authError}</Text>
             ) : null}
 
             {authSuccess ? (
-              <View style={styles.successBanner}>
-                <Text style={styles.successText}>{authSuccess}</Text>
-              </View>
+              <Text style={styles.successText}>{authSuccess}</Text>
             ) : null}
 
             {!isLogin && (
@@ -180,21 +177,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
               isPassword
             />
 
-            {/* Botón Principal (Color Coral / Rose Acorde al Mockup) */}
-            <TouchableOpacity
-              style={styles.submitBtn}
+            {/* Botón Principal Reutilizable (LuxuryButton) */}
+            <LuxuryButton
+              title={isLogin ? 'SIGN IN' : 'SIGN UP'}
               onPress={isLogin ? handleLogin : handleRegister}
-              disabled={authLoading}
-              activeOpacity={0.85}
-            >
-              {authLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.submitBtnText}>
-                  {isLogin ? 'SIGN IN' : 'SIGN UP'}
-                </Text>
-              )}
-            </TouchableOpacity>
+              loading={authLoading}
+              variant="solid"
+            />
 
             {/* Toggle Inferior Registro / Login */}
             <TouchableOpacity
@@ -259,12 +248,12 @@ const styles = StyleSheet.create({
     width: 78,
     height: 78,
     borderRadius: 39,
-    backgroundColor: '#E74C60', // Color Coral/Rose
+    backgroundColor: '#488C8C', // Color de marca Aura Hotel
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#488C8C',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 10,
     zIndex: 50,
@@ -278,7 +267,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   circleBadgeSub: {
-    color: '#FFE4E6',
+    color: '#E6F4F4',
     fontSize: 8.5,
     fontWeight: '800',
     fontFamily: 'Sora_700Bold',
@@ -309,12 +298,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   submitBtn: {
-    backgroundColor: '#E74C60', // Mismo tono Coral / Rose del badge
-    borderRadius: 8,
+    backgroundColor: '#488C8C', // Tono de marca #488C8C
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
-    shadowColor: '#E74C60',
+    shadowColor: '#488C8C',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -340,36 +329,24 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   toggleFooterBold: {
-    color: '#0F172A',
+    color: '#488C8C',
     fontWeight: '900',
     fontFamily: 'Sora_800ExtraBold',
   },
-  errorBanner: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 16,
-  },
   errorText: {
-    color: '#DC2626',
-    fontSize: 12,
+    color: '#EF4444',
+    fontSize: 12.5,
     textAlign: 'center',
-    fontWeight: '600',
-  },
-  successBanner: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 16,
+    fontWeight: '700',
+    fontFamily: 'Sora_600SemiBold',
+    marginVertical: 6,
   },
   successText: {
-    color: '#16A34A',
-    fontSize: 12,
+    color: '#10B981',
+    fontSize: 12.5,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontFamily: 'Sora_600SemiBold',
+    marginVertical: 6,
   },
 });

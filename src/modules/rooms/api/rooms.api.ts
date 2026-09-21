@@ -16,6 +16,11 @@ export interface Room {
   imageUrl?: string | null;
 }
 
+export const formatRoomNumber = (roomNumber?: string | null): string => {
+  if (!roomNumber) return '';
+  return roomNumber.replace(/^(hab\.?|habitación)\s*/i, '').trim();
+};
+
 export interface Booking {
   id: string;
   bookingId: string;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@/modules/auth/api/auth.api';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
@@ -22,8 +23,11 @@ export default function AppScreen() {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'RECEPTIONIST';
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container} className="flex-1 bg-slate-100">
-      {/* Top Header con Avatar de Iniciales y Tooltip interactivo */}
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
+      {/* Barra de estado con iconos oscuros y fondo blanco en Android */}
+      <StatusBar style="dark" backgroundColor="#FFFFFF" translucent={false} />
+
+      {/* Top Header con Avatar de Iniciales y Tooltip interactivo - FIJO EN LA PARTE SUPERIOR */}
       <UserMenuHeader
         currentUser={currentUser}
         onLogout={() => setCurrentUser(null)}
@@ -31,7 +35,7 @@ export default function AppScreen() {
       />
 
       {/* Vistas según el Tab seleccionado */}
-      <View style={styles.content} className="flex-1">
+      <View style={styles.content}>
         {activeTab === 'rooms' && (
           <RoomsPage
             currentUser={currentUser}
@@ -54,9 +58,10 @@ export default function AppScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF', // Fondo blanco superior para armonía con el StatusBar
   },
   content: {
     flex: 1,
+    backgroundColor: '#F1F5F9', // Fondo gris pizarra suave para el cuerpo de la app
   },
 });

@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet } fr
 import { Ionicons } from '@expo/vector-icons';
 import { Room } from '../api/rooms.api';
 
+import { LuxuryButton } from '@/components/LuxuryButton';
+
 interface BookingModalsProps {
   selectedRoom: Room | null;
   checkIn: string;
@@ -39,28 +41,28 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
 
                 <View style={styles.modalInfoBox}>
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="calendar-outline" size={16} color="#0F172A" />
+                    <Ionicons name="calendar-outline" size={16} color="#488C8C" />
                     <Text style={styles.modalInfoItem}>
                       <Text style={{ fontWeight: 'bold' }}>Fechas: </Text>{checkIn} al {checkOut}
                     </Text>
                   </View>
 
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="people-outline" size={16} color="#0F172A" />
+                    <Ionicons name="people-outline" size={16} color="#488C8C" />
                     <Text style={styles.modalInfoItem}>
                       <Text style={{ fontWeight: 'bold' }}>Huéspedes: </Text>{capacity} personas
                     </Text>
                   </View>
 
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="bed-outline" size={16} color="#0F172A" />
+                    <Ionicons name="bed-outline" size={16} color="#488C8C" />
                     <Text style={styles.modalInfoItem}>
                       <Text style={{ fontWeight: 'bold' }}>Camas: </Text>{selectedRoom.bedType}
                     </Text>
                   </View>
 
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="cash-outline" size={16} color="#0F172A" />
+                    <Ionicons name="cash-outline" size={16} color="#488C8C" />
                     <Text style={styles.modalInfoItem}>
                       <Text style={{ fontWeight: 'bold' }}>Tarifa: </Text>S/ {selectedRoom.pricePerNight} / noche
                     </Text>
@@ -68,25 +70,23 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
                 </View>
 
                 <View style={styles.modalActionRow}>
-                  <TouchableOpacity
-                    style={styles.modalCancelBtn}
-                    onPress={onCloseBooking}
-                    disabled={bookingLoading}
-                  >
-                    <Text style={styles.modalCancelText}>Cancelar</Text>
-                  </TouchableOpacity>
+                  <View style={{ flex: 1 }}>
+                    <LuxuryButton
+                      title="Cancelar"
+                      variant="outline"
+                      onPress={onCloseBooking}
+                      disabled={bookingLoading}
+                    />
+                  </View>
 
-                  <TouchableOpacity
-                    style={styles.modalConfirmBtn}
-                    onPress={onConfirmBooking}
-                    disabled={bookingLoading}
-                  >
-                    {bookingLoading ? (
-                      <ActivityIndicator color="#FFFFFF" />
-                    ) : (
-                      <Text style={styles.modalConfirmText}>Confirmar</Text>
-                    )}
-                  </TouchableOpacity>
+                  <View style={{ flex: 1.2 }}>
+                    <LuxuryButton
+                      title="Confirmar"
+                      variant="solid"
+                      loading={bookingLoading}
+                      onPress={onConfirmBooking}
+                    />
+                  </View>
                 </View>
               </>
             )}
@@ -112,12 +112,12 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
               <Text style={styles.ticketTotal}>Total: S/ {bookingSuccessModal?.totalAmount}</Text>
             </View>
 
-            <TouchableOpacity
-              style={styles.successDoneBtn}
+            <LuxuryButton
+              title="Entendido"
+              variant="solid"
               onPress={onCloseSuccess}
-            >
-              <Text style={styles.successDoneText}>Entendido</Text>
-            </TouchableOpacity>
+              style={{ width: '100%', marginTop: 8 }}
+            />
           </View>
         </View>
       </Modal>

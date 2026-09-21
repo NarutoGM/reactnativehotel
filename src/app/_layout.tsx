@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, Text, TextInput } from 'react-native';
 import {
   useFonts,
@@ -15,22 +16,23 @@ import {
 
 SplashScreen.preventAutoHideAsync();
 
-// Establecer Sora como tipografía predeterminada global
-if ((Text as any).defaultProps == null) {
-  (Text as any).defaultProps = {};
+// Configurar defaultProps solo de forma segura si la propiedad existe
+try {
+  if ((Text as any).defaultProps) {
+    (Text as any).defaultProps.style = {
+      fontFamily: 'Sora_400Regular',
+      ...((Text as any).defaultProps.style || {}),
+    };
+  }
+  if ((TextInput as any).defaultProps) {
+    (TextInput as any).defaultProps.style = {
+      fontFamily: 'Sora_400Regular',
+      ...((TextInput as any).defaultProps.style || {}),
+    };
+  }
+} catch (e) {
+  // En React 19 / RN modernos defaultProps está deprecado y LogBox puede interceptarlo
 }
-(Text as any).defaultProps.style = {
-  fontFamily: 'Sora_400Regular',
-  ...((Text as any).defaultProps.style || {}),
-};
-
-if ((TextInput as any).defaultProps == null) {
-  (TextInput as any).defaultProps = {};
-}
-(TextInput as any).defaultProps.style = {
-  fontFamily: 'Sora_400Regular',
-  ...((TextInput as any).defaultProps.style || {}),
-};
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -60,7 +62,8 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DefaultTheme}>
+      <StatusBar style="dark" backgroundColor="#FFFFFF" translucent={false} />
       <Stack screenOptions={{ headerShown: false }} />
     </ThemeProvider>
   );

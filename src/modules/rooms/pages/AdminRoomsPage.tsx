@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Room, roomsApi } from '../api/rooms.api';
+import { Room, roomsApi, formatRoomNumber } from '../api/rooms.api';
 import { EditRoomModal } from '../components/EditRoomModal';
 
 export const AdminRoomsPage: React.FC = () => {
@@ -58,7 +58,7 @@ export const AdminRoomsPage: React.FC = () => {
 
     Alert.alert(
       'Eliminar Habitación',
-      `¿Estás seguro de eliminar permanentemente la habitación ${room.roomNumber} (${room.title})? Esta acción no se puede deshacer.`,
+      `¿Estás seguro de eliminar permanentemente la habitación ${formatRoomNumber(room.roomNumber)} (${room.title})? Esta acción no se puede deshacer.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -153,7 +153,7 @@ export const AdminRoomsPage: React.FC = () => {
                       <View>
                         <Text className="text-slate-900 font-black text-[15px]">{item.title}</Text>
                         <Text className="text-slate-500 text-[11px] font-bold">
-                          Hab. {item.roomNumber} · Piso {item.floor} · {item.capacity} pers.
+                          Hab. {formatRoomNumber(item.roomNumber)} · Piso {item.floor} · {item.capacity} pers.
                         </Text>
                       </View>
                     </View>

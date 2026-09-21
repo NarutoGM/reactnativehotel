@@ -20,7 +20,10 @@ interface RoomsPageProps {
   onNavigateToBookings?: () => void;
 }
 
-export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToBookings }) => {
+export const RoomsPage: React.FC<RoomsPageProps> = ({
+  currentUser,
+  onNavigateToBookings,
+}) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [capacity, setCapacity] = useState('2');
@@ -88,59 +91,63 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({ currentUser, onNavigateToB
 
   return (
     <View style={styles.container} className="flex-1 bg-slate-100">
-      <DateFilterBar
-        checkIn={checkIn}
-        checkOut={checkOut}
-        capacity={capacity}
-        onCheckInChange={setCheckIn}
-        onCheckOutChange={setCheckOut}
-        onCapacityChange={setCapacity}
-        onSearch={() => fetchRooms()}
-      />
+      <FlatList
+        data={roomsLoading ? [] : rooms}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.flatListContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View>
+            <DateFilterBar
+              checkIn={checkIn}
+              checkOut={checkOut}
+              capacity={capacity}
+              onCheckInChange={setCheckIn}
+              onCheckOutChange={setCheckOut}
+              onCapacityChange={setCapacity}
+              onSearch={() => fetchRooms()}
+            />
 
-      <View style={styles.listContainer} className="flex-1 px-3.5">
-        <View style={styles.titleRow} className="flex-row justify-between items-center mb-2.5">
-          <Text style={styles.titleText} className="text-slate-900 text-[16px] font-black">
-            Habitaciones Disponibles ({rooms.length})
-          </Text>
-          <Text style={styles.subtitleText} className="text-slate-500 text-[12px] font-medium">
-            Para {capacity} personas
-          </Text>
-        </View>
-
-        {roomsLoading ? (
-          <View style={styles.centerBox} className="flex-1 justify-center items-center py-12">
-            <ActivityIndicator size="large" color="#0F172A" />
-            <Text style={styles.loadingText} className="text-slate-500 mt-2.5 text-[13px] font-medium">
-              Buscando disponibilidad en Aura Hotel...
-            </Text>
+            <View style={styles.titleRow} className="flex-row justify-between items-center mb-2.5 px-3.5 mt-2">
+              <Text style={styles.titleText} className="text-slate-900 text-[16px] font-black">
+                Habitaciones Disponibles ({rooms.length})
+              </Text>
+              <Text style={styles.subtitleText} className="text-slate-500 text-[12px] font-medium">
+                Para {capacity} personas
+              </Text>
+            </View>
           </View>
-        ) : rooms.length === 0 ? (
-          <View style={styles.centerBox} className="flex-1 justify-center items-center px-8 py-10">
-            <Ionicons name="bed-outline" size={44} color="#94A3B8" />
-            <Text style={styles.emptyTitle} className="text-slate-900 text-[16px] font-bold mt-2.5">
-              No se encontraron habitaciones
-            </Text>
-            <Text style={styles.emptySubtitle} className="text-slate-500 text-center text-[12px] mt-1">
-              Prueba cambiando las fechas o reduciendo la cantidad de huéspedes.
-            </Text>
+        }
+        ListEmptyComponent={
+          roomsLoading ? (
+            <View style={styles.centerBox} className="justify-center items-center py-12">
+              <ActivityIndicator size="large" color="#0F172A" />
+              <Text style={styles.loadingText} className="text-slate-500 mt-2.5 text-[13px] font-medium">
+                Buscando disponibilidad en Aura Hotel...
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.centerBox} className="justify-center items-center px-8 py-10">
+              <Ionicons name="bed-outline" size={44} color="#94A3B8" />
+              <Text style={styles.emptyTitle} className="text-slate-900 text-[16px] font-bold mt-2.5">
+                No se encontraron habitaciones
+              </Text>
+              <Text style={styles.emptySubtitle} className="text-slate-500 text-center text-[12px] mt-1">
+                Prueba cambiando las fechas o reduciendo la cantidad de huéspedes.
+              </Text>
+            </View>
+          )
+        }
+        renderItem={({ item }) => (
+          <View className="px-3.5">
+            <RoomCard
+              room={item}
+              onPress={(r) => setDetailRoom(r)}
+              onBook={(r) => setSelectedRoom(r)}
+            />
           </View>
-        ) : (
-          <FlatList
-            data={rooms}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.flatListContent}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <RoomCard
-                room={item}
-                onPress={(r) => setDetailRoom(r)}
-                onBook={(r) => setSelectedRoom(r)}
-              />
-            )}
-          />
         )}
-      </View>
+      />
 
       {/* MODAL DETALLES COMPLETOS DE HABITACIÓN */}
       <RoomDetailModal
