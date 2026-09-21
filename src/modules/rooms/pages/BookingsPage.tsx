@@ -222,9 +222,14 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   <Text style={styles.roomTitle}>
                     {b.room?.title || 'Habitación en Aura Grand Hotel'}
                   </Text>
-                  <Text style={styles.roomDetails}>
-                    📅 {b.checkInDate} al {b.checkOutDate} · {b.nights} noche(s) · {b.guestsCount} huésped(es)
-                  </Text>
+                  
+                  <View style={styles.datesRow}>
+                    <Ionicons name="calendar-outline" size={14} color="#64748B" style={{ marginRight: 5 }} />
+                    <Text style={styles.roomDetails}>
+                      {b.checkInDate} al {b.checkOutDate} · {b.nights} noche(s) · {b.guestsCount} huésped(es)
+                    </Text>
+                  </View>
+
                   <Text style={styles.roomTotal}>
                     Total: <Text style={styles.roomTotalAmount}>S/ {b.totalAmount}</Text>
                   </Text>
@@ -422,11 +427,17 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 16,
   },
+  datesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
   roomDetails: {
     color: '#64748B',
     fontSize: 12,
     fontWeight: '600',
-    marginTop: 3,
+    flexShrink: 1,
   },
   roomTotal: {
     color: '#0F172A',
