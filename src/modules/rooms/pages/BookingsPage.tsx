@@ -167,20 +167,28 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   <View
                     style={[
                       styles.statusBadge,
-                      b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
+                      b.status === 'CONFIRMED'
                         ? styles.statusBadgeConfirmed
-                        : isPending
+                        : b.status === 'CHECKED_IN'
+                        ? styles.statusBadgeCheckedIn
+                        : b.status === 'PENDING'
                         ? styles.statusBadgePending
+                        : b.status === 'CANCELLED' || b.status === 'REJECTED'
+                        ? styles.statusBadgeCancelled
                         : styles.statusBadgeNeutral,
                     ]}
                   >
                     <Text
                       style={[
                         styles.statusText,
-                        b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
+                        b.status === 'CONFIRMED'
                           ? styles.statusTextConfirmed
-                          : isPending
+                          : b.status === 'CHECKED_IN'
+                          ? styles.statusTextCheckedIn
+                          : b.status === 'PENDING'
                           ? styles.statusTextPending
+                          : b.status === 'CANCELLED' || b.status === 'REJECTED'
+                          ? styles.statusTextCancelled
                           : styles.statusTextNeutral,
                       ]}
                     >
@@ -190,6 +198,12 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         ? 'CONFIRMADA'
                         : b.status === 'CHECKED_IN'
                         ? 'EN ESTADÍA'
+                        : b.status === 'CHECKED_OUT'
+                        ? 'FINALIZADA'
+                        : b.status === 'CANCELLED'
+                        ? 'CANCELADA'
+                        : b.status === 'REJECTED'
+                        ? 'RECHAZADA'
                         : b.status}
                     </Text>
                   </View>
@@ -363,6 +377,12 @@ const styles = StyleSheet.create({
   statusBadgeConfirmed: {
     backgroundColor: '#F0FDF4',
   },
+  statusBadgeCheckedIn: {
+    backgroundColor: '#EFF6FF',
+  },
+  statusBadgeCancelled: {
+    backgroundColor: '#FEF2F2',
+  },
   statusBadgeNeutral: {
     backgroundColor: '#F1F5F9',
   },
@@ -376,6 +396,12 @@ const styles = StyleSheet.create({
   },
   statusTextConfirmed: {
     color: '#16A34A',
+  },
+  statusTextCheckedIn: {
+    color: '#2563EB',
+  },
+  statusTextCancelled: {
+    color: '#DC2626',
   },
   statusTextNeutral: {
     color: '#64748B',
