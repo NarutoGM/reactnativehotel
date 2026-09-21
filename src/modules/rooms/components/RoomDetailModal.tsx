@@ -19,10 +19,16 @@ const { height: screenHeight } = Dimensions.get('window');
 interface RoomDetailModalProps {
   room: Room | null;
   onClose: () => void;
-  onBook: (room: Room) => void;
+  onBook?: (room: Room) => void;
+  showBookButton?: boolean;
 }
 
-export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose, onBook }) => {
+export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
+  room,
+  onClose,
+  onBook,
+  showBookButton = true,
+}) => {
   const defaultImage = room?.type.toLowerCase().includes('suite')
     ? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80'
     : 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80';
@@ -134,26 +140,28 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
             </View>
           </ScrollView>
 
-          {/* Barra inferior fija con botón 'Reservar Habitación' siempre visible */}
+          {/* Barra inferior fija */}
           <View style={styles.bottomBar}>
             <View style={{ flex: 1 }}>
               <LuxuryButton
                 title="Cerrar"
-                variant="outline"
+                variant={showBookButton && onBook ? "outline" : "solid"}
                 onPress={onClose}
               />
             </View>
 
-            <View style={{ flex: 2 }}>
-              <LuxuryButton
-                title="Reservar Habitación"
-                variant="solid"
-                onPress={() => {
-                  onClose();
-                  onBook(room);
-                }}
-              />
-            </View>
+            {showBookButton && onBook && (
+              <View style={{ flex: 2 }}>
+                <LuxuryButton
+                  title="Reservar Habitación"
+                  variant="solid"
+                  onPress={() => {
+                    onClose();
+                    onBook(room);
+                  }}
+                />
+              </View>
+            )}
           </View>
         </View>
       </View>

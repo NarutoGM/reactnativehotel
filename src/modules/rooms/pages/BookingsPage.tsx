@@ -298,13 +298,11 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         )}
       </ScrollView>
 
-      {/* Modal Detalles de Habitación */}
+      {/* Modal Detalles de Habitación (Solo lectura informativa, sin botón de reservar) */}
       <RoomDetailModal
         room={detailRoom}
         onClose={() => setDetailRoom(null)}
-        onBook={() => {
-          setDetailRoom(null);
-        }}
+        showBookButton={false}
       />
     </View>
   );
