@@ -18,7 +18,7 @@ interface BookingsPageProps {
   currentUser: User;
 }
 
-type BookingCategory = 'PENDING' | 'ACTIVE' | 'FINISHED';
+type BookingCategory = 'PENDING' | 'ACTIVE' | 'CANCELLED';
 
 export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -90,15 +90,15 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     if (activeCategory === 'ACTIVE') {
       return b.status === 'CONFIRMED' || b.status === 'CHECKED_IN';
     }
-    if (activeCategory === 'FINISHED') {
-      return b.status === 'CHECKED_OUT' || b.status === 'CANCELLED' || b.status === 'REJECTED';
+    if (activeCategory === 'CANCELLED') {
+      return b.status === 'CANCELLED' || b.status === 'REJECTED';
     }
     return true;
   });
 
   return (
     <View style={styles.container}>
-      {/* Category Tabs: Pendientes / Activas / Historial */}
+      {/* Category Tabs: Pendientes / Activas / Canceladas */}
       <View style={styles.tabBar}>
         <TouchableOpacity
           style={[styles.tabButton, activeCategory === 'PENDING' && styles.tabButtonActive]}
@@ -121,12 +121,12 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeCategory === 'FINISHED' && styles.tabButtonActive]}
-          onPress={() => setActiveCategory('FINISHED')}
+          style={[styles.tabButton, activeCategory === 'CANCELLED' && styles.tabButtonActive]}
+          onPress={() => setActiveCategory('CANCELLED')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, activeCategory === 'FINISHED' && styles.tabTextActive]}>
-            Historial
+          <Text style={[styles.tabText, activeCategory === 'CANCELLED' && styles.tabTextActive]}>
+            Canceladas
           </Text>
         </TouchableOpacity>
       </View>
