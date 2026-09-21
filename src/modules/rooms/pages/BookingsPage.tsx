@@ -235,8 +235,10 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   <View style={styles.voucherButtonContainer}>
                     <LuxuryButton
                       title="Subir Voucher"
-                      variant="gradient"
+                      variant="solid"
+                      size="md"
                       iconName="cloud-upload-outline"
+                      style={{ paddingVertical: 15, minHeight: 52, borderRadius: 14 }}
                       onPress={() => handlePickAndUploadVoucher(b)}
                       loading={uploadingId === b.id}
                     />
