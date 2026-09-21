@@ -223,10 +223,17 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                     {b.room?.title || 'Habitación en Aura Grand Hotel'}
                   </Text>
                   
-                  <View style={styles.datesRow}>
-                    <Ionicons name="calendar-outline" size={14} color="#64748B" style={{ marginRight: 5 }} />
+                  <View style={styles.infoRow}>
+                    <Ionicons name="calendar-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
                     <Text style={styles.roomDetails}>
-                      {b.checkInDate} al {b.checkOutDate} · {b.nights} noche(s) · {b.guestsCount} huésped(es)
+                      {b.checkInDate} al {b.checkOutDate} ({b.nights} {b.nights === 1 ? 'noche' : 'noches'})
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Ionicons name="people-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
+                    <Text style={styles.roomDetails}>
+                      {b.guestsCount} {b.guestsCount === 1 ? 'huésped' : 'huéspedes'}
                     </Text>
                   </View>
 
@@ -427,17 +434,15 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 16,
   },
-  datesRow: {
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-    flexWrap: 'wrap',
+    marginTop: 3.5,
   },
   roomDetails: {
     color: '#64748B',
     fontSize: 12,
     fontWeight: '600',
-    flexShrink: 1,
   },
   roomTotal: {
     color: '#0F172A',
