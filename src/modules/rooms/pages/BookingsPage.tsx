@@ -372,13 +372,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusBadgePending: {
-    backgroundColor: '#EBF4F4',
+    backgroundColor: '#FFF7ED',
   },
   statusBadgeConfirmed: {
     backgroundColor: '#F0FDF4',
   },
   statusBadgeCheckedIn: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#F0FDF4',
   },
   statusBadgeCancelled: {
     backgroundColor: '#FEF2F2',
@@ -392,16 +392,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   statusTextPending: {
-    color: '#488C8C',
+    color: '#EA580C', // Naranja
   },
   statusTextConfirmed: {
-    color: '#16A34A',
+    color: '#16A34A', // Verde
   },
   statusTextCheckedIn: {
-    color: '#2563EB',
+    color: '#16A34A', // Verde
   },
   statusTextCancelled: {
-    color: '#DC2626',
+    color: '#DC2626', // Rojo
   },
   statusTextNeutral: {
     color: '#64748B',
