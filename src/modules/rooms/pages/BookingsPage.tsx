@@ -7,10 +7,12 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '../../auth/api/auth.api';
 import { roomsApi, Booking } from '../api/rooms.api';
+import { LuxuryButton } from '@/components/LuxuryButton';
 
 interface BookingsPageProps {
   currentUser: User;
@@ -69,7 +71,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         setUploadingId(null);
 
         if (res.success) {
-          Alert.alert('¡Éxito!', 'La captura del voucher se ha subido correctamente a Firebase Storage.');
+          Alert.alert('¡Éxito!', 'La captura del voucher se ha subido correctamente.');
           loadBookings();
         } else {
           Alert.alert('Error al subir', res.error || 'No se pudo subir la imagen.');
@@ -95,51 +97,54 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   });
 
   return (
-    <View className="flex-1 bg-slate-100">
-      {/* Category Tabs: Pendientes / Activas / Finalizadas */}
-      <View className="flex-row bg-white p-2 mx-3.5 mt-3.5 rounded-2xl border border-slate-200 shadow-sm gap-1">
+    <View style={styles.container}>
+      {/* Category Tabs: Pendientes / Activas / Historial */}
+      <View style={styles.tabBar}>
         <TouchableOpacity
-          className={`flex-1 py-2 items-center rounded-xl ${activeCategory === 'PENDING' ? 'bg-slate-900' : 'bg-slate-50'}`}
+          style={[styles.tabButton, activeCategory === 'PENDING' && styles.tabButtonActive]}
           onPress={() => setActiveCategory('PENDING')}
+          activeOpacity={0.8}
         >
-          <Text className={`text-[12px] font-bold ${activeCategory === 'PENDING' ? 'text-white' : 'text-slate-600'}`}>
+          <Text style={[styles.tabText, activeCategory === 'PENDING' && styles.tabTextActive]}>
             Pendientes
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`flex-1 py-2 items-center rounded-xl ${activeCategory === 'ACTIVE' ? 'bg-slate-900' : 'bg-slate-50'}`}
+          style={[styles.tabButton, activeCategory === 'ACTIVE' && styles.tabButtonActive]}
           onPress={() => setActiveCategory('ACTIVE')}
+          activeOpacity={0.8}
         >
-          <Text className={`text-[12px] font-bold ${activeCategory === 'ACTIVE' ? 'text-white' : 'text-slate-600'}`}>
+          <Text style={[styles.tabText, activeCategory === 'ACTIVE' && styles.tabTextActive]}>
             Activas
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`flex-1 py-2 items-center rounded-xl ${activeCategory === 'FINISHED' ? 'bg-slate-900' : 'bg-slate-50'}`}
+          style={[styles.tabButton, activeCategory === 'FINISHED' && styles.tabButtonActive]}
           onPress={() => setActiveCategory('FINISHED')}
+          activeOpacity={0.8}
         >
-          <Text className={`text-[12px] font-bold ${activeCategory === 'FINISHED' ? 'text-white' : 'text-slate-600'}`}>
+          <Text style={[styles.tabText, activeCategory === 'FINISHED' && styles.tabTextActive]}>
             Historial
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Bookings List */}
-      <ScrollView className="flex-1 px-3.5 pt-3" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.listScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {loading ? (
-          <View className="py-16 justify-center items-center">
-            <ActivityIndicator size="large" color="#0F172A" />
-            <Text className="text-slate-500 mt-2 text-[13px] font-medium">Cargando tus reservas...</Text>
+          <View style={styles.centerBox}>
+            <ActivityIndicator size="large" color="#488C8C" />
+            <Text style={styles.loadingText}>Cargando tus reservas...</Text>
           </View>
         ) : filteredBookings.length === 0 ? (
-          <View className="py-14 justify-center items-center px-6">
+          <View style={styles.centerBox}>
             <Ionicons name="receipt-outline" size={48} color="#94A3B8" />
-            <Text className="text-slate-900 text-[16px] font-bold mt-2.5">
+            <Text style={styles.emptyTitle}>
               No hay reservas en esta categoría
             </Text>
-            <Text className="text-slate-500 text-center text-[12px] mt-1">
+            <Text style={styles.emptySubtitle}>
               Las reservas realizadas se mostrarán aquí con su estado actual y comprobante.
             </Text>
           </View>
@@ -149,36 +154,35 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
             const hasVoucher = !!b.voucherFileName;
 
             return (
-              <View
-                key={b.id}
-                className="bg-white rounded-2xl p-4 mb-3.5 border border-slate-200 shadow-sm"
-              >
-                {/* Header Card */}
-                <View className="flex-row justify-between items-center pb-2.5 border-b border-slate-100">
-                  <View className="flex-row items-center gap-1.5">
-                    <Ionicons name="bookmark" size={16} color="#0F172A" />
-                    <Text className="text-slate-900 font-black text-[15px] tracking-wide">
+              <View key={b.id} style={styles.bookingCard}>
+                {/* Header Card con código y estado limpio sin bordes amarillos */}
+                <View style={styles.cardHeader}>
+                  <View style={styles.bookingCodeRow}>
+                    <Ionicons name="bookmark" size={16} color="#488C8C" />
+                    <Text style={styles.bookingCodeText}>
                       {b.bookingId}
                     </Text>
                   </View>
 
                   <View
-                    className={`px-2.5 py-1 rounded-full border ${
+                    style={[
+                      styles.statusBadge,
                       b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
-                        ? 'bg-emerald-50 border-emerald-200'
-                        : b.status === 'PENDING'
-                        ? 'bg-amber-50 border-amber-200'
-                        : 'bg-slate-100 border-slate-200'
-                    }`}
+                        ? styles.statusBadgeConfirmed
+                        : isPending
+                        ? styles.statusBadgePending
+                        : styles.statusBadgeNeutral,
+                    ]}
                   >
                     <Text
-                      className={`text-[10px] font-black ${
+                      style={[
+                        styles.statusText,
                         b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
-                          ? 'text-emerald-700'
-                          : b.status === 'PENDING'
-                          ? 'text-amber-700'
-                          : 'text-slate-600'
-                      }`}
+                          ? styles.statusTextConfirmed
+                          : isPending
+                          ? styles.statusTextPending
+                          : styles.statusTextNeutral,
+                      ]}
                     >
                       {b.status === 'PENDING'
                         ? 'PENDIENTE DE VOUCHER'
@@ -192,64 +196,50 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                 </View>
 
                 {/* Room Info */}
-                <View className="py-2.5">
-                  <Text className="text-slate-900 font-black text-[16px]">
+                <View style={styles.cardBody}>
+                  <Text style={styles.roomTitle}>
                     {b.room?.title || 'Habitación en Aura Grand Hotel'}
                   </Text>
-                  <Text className="text-slate-500 text-[12px] font-semibold mt-0.5">
+                  <Text style={styles.roomDetails}>
                     📅 {b.checkInDate} al {b.checkOutDate} · {b.nights} noche(s) · {b.guestsCount} huésped(es)
                   </Text>
-                  <Text className="text-slate-900 font-black text-[16px] mt-1.5">
-                    Total: S/ {b.totalAmount}
+                  <Text style={styles.roomTotal}>
+                    Total: <Text style={styles.roomTotalAmount}>S/ {b.totalAmount}</Text>
                   </Text>
                 </View>
 
-                {/* Voucher Section */}
+                {/* Voucher Action: Botón Limpio Variante 3 (Gradient/Solid) sin caja naranja */}
                 {hasVoucher ? (
-                  <View className="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-1 flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-2">
+                  <View style={styles.voucherUploadedRow}>
+                    <View style={styles.voucherPreviewLeft}>
                       <Image
                         source={{ uri: b.voucherFileName! }}
-                        className="w-12 h-12 rounded-lg bg-slate-200 border border-slate-300"
+                        style={styles.voucherThumbnail}
                         resizeMode="cover"
                       />
                       <View>
-                        <Text className="text-slate-900 text-[12px] font-bold">Comprobante Adjunto</Text>
-                        <Text className="text-emerald-600 text-[11px] font-semibold">✓ Subido a Firebase Storage</Text>
+                        <Text style={styles.voucherTitle}>Comprobante Adjunto</Text>
+                        <Text style={styles.voucherSub}>✓ Guardado en sistema</Text>
                       </View>
                     </View>
 
-                    <TouchableOpacity
-                      className="bg-slate-200 px-3 py-1.5 rounded-lg"
+                    <LuxuryButton
+                      title="Cambiar"
+                      variant="outline"
+                      size="sm"
                       onPress={() => handlePickAndUploadVoucher(b)}
-                    >
-                      <Text className="text-slate-700 text-[11px] font-bold">Cambiar</Text>
-                    </TouchableOpacity>
+                      loading={uploadingId === b.id}
+                    />
                   </View>
                 ) : isPending ? (
-                  <View className="bg-amber-50 p-3.5 rounded-xl border border-amber-200 mt-1">
-                    <View className="flex-row items-center gap-1.5 mb-1.5">
-                      <Ionicons name="cloud-upload-outline" size={16} color="#D97706" />
-                      <Text className="text-amber-900 text-[12px] font-bold">Adjunta tu Voucher de Pago</Text>
-                    </View>
-                    <Text className="text-amber-800 text-[11px] mb-2.5">
-                      Sube la captura de tu transferencia o pago para que Recepción confirme tu reserva.
-                    </Text>
-
-                    <TouchableOpacity
-                      className="bg-amber-600 py-2.5 rounded-lg items-center flex-row justify-center gap-2 shadow-sm"
+                  <View style={styles.voucherButtonContainer}>
+                    <LuxuryButton
+                      title="Subir Voucher"
+                      variant="gradient"
+                      iconName="cloud-upload-outline"
                       onPress={() => handlePickAndUploadVoucher(b)}
-                      disabled={uploadingId === b.id}
-                    >
-                      {uploadingId === b.id ? (
-                        <ActivityIndicator color="#FFFFFF" size="small" />
-                      ) : (
-                        <>
-                          <Ionicons name="image-outline" size={16} color="#FFFFFF" />
-                          <Text className="text-white text-[12px] font-bold">Subir Captura del Voucher</Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                      loading={uploadingId === b.id}
+                    />
                   </View>
                 ) : null}
               </View>
@@ -260,3 +250,194 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    padding: 6,
+    marginHorizontal: 14,
+    marginTop: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 6,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+  },
+  tabButtonActive: {
+    backgroundColor: '#488C8C',
+  },
+  tabText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  listScroll: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 24,
+  },
+  centerBox: {
+    paddingVertical: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingText: {
+    color: '#64748B',
+    marginTop: 8,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  bookingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  bookingCodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  bookingCodeText: {
+    color: '#0F172A',
+    fontWeight: '900',
+    fontSize: 15,
+    letterSpacing: 0.5,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  statusBadgePending: {
+    backgroundColor: '#EBF4F4',
+  },
+  statusBadgeConfirmed: {
+    backgroundColor: '#F0FDF4',
+  },
+  statusBadgeNeutral: {
+    backgroundColor: '#F1F5F9',
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  statusTextPending: {
+    color: '#488C8C',
+  },
+  statusTextConfirmed: {
+    color: '#16A34A',
+  },
+  statusTextNeutral: {
+    color: '#64748B',
+  },
+  cardBody: {
+    paddingVertical: 10,
+  },
+  roomTitle: {
+    color: '#0F172A',
+    fontWeight: '900',
+    fontSize: 16,
+  },
+  roomDetails: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 3,
+  },
+  roomTotal: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 14,
+    marginTop: 6,
+  },
+  roomTotalAmount: {
+    fontWeight: '900',
+    fontSize: 16,
+    color: '#0F172A',
+  },
+  voucherButtonContainer: {
+    marginTop: 4,
+  },
+  voucherUploadedRow: {
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  voucherPreviewLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  voucherThumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: '#E2E8F0',
+  },
+  voucherTitle: {
+    color: '#0F172A',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  voucherSub: {
+    color: '#16A34A',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+});
+
