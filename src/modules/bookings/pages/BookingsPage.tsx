@@ -10,10 +10,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { User } from '../../auth/api/auth.api';
-import { roomsApi, Booking, Room } from '../api/rooms.api';
+import { User } from '@/modules/auth/api/auth.api';
+import { bookingsApi, Booking } from '../api/bookings.api';
+import { Room } from '@/modules/rooms/api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
-import { RoomDetailModal } from '../components/RoomDetailModal';
+import { RoomDetailModal } from '@/modules/rooms/components/RoomDetailModal';
 
 interface BookingsPageProps {
   currentUser: User;
@@ -34,7 +35,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
 
   const loadBookings = async () => {
     setLoading(true);
-    const res = await roomsApi.getBookings(currentUser.role === 'GUEST' ? currentUser.id : undefined);
+    const res = await bookingsApi.getBookings(currentUser.role === 'GUEST' ? currentUser.id : undefined);
     setLoading(false);
     if (res.success) {
       setBookings(res.bookings);
@@ -69,7 +70,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
         const uri = result.assets[0].uri;
         setUploadingId(booking.id);
-        const res = await roomsApi.uploadVoucher(booking.id, uri);
+        const res = await bookingsApi.uploadVoucher(booking.id, uri);
         setUploadingId(null);
 
         if (res.success) {
@@ -256,7 +257,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   </Text>
                 </View>
 
-                {/* Voucher Action: Botón Limpio Variante 3 (Gradient/Solid) sin caja naranja */}
+                {/* Voucher Action: Botón Limpio Variante 3 (Solid) */}
                 {hasVoucher ? (
                   <View style={styles.voucherUploadedRow}>
                     <View style={styles.voucherPreviewLeft}>
@@ -535,4 +536,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

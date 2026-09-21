@@ -7,7 +7,7 @@ import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ProfilePage } from '@/modules/auth/pages/ProfilePage';
 import { RoomsPage } from '@/modules/rooms/pages/RoomsPage';
 import { AdminRoomsPage } from '@/modules/rooms/pages/AdminRoomsPage';
-import { BookingsPage } from '@/modules/rooms/pages/BookingsPage';
+import { BookingsPage } from '@/modules/bookings/pages/BookingsPage';
 import { BottomNavBar, MainTabType } from '@/components/BottomNavBar';
 import { UserMenuHeader } from '@/components/UserMenuHeader';
 

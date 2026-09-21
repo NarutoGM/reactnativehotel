@@ -12,7 +12,7 @@ import { User } from '../../auth/api/auth.api';
 import { roomsApi, Room } from '../api/rooms.api';
 import { RoomCard } from '../components/RoomCard';
 import { DateFilterBar } from '../components/DateFilterBar';
-import { BookingModals } from '../components/BookingModals';
+import { BookingModals } from '@/modules/bookings/components/BookingModals';
 import { RoomDetailModal } from '../components/RoomDetailModal';
 
 interface RoomsPageProps {
