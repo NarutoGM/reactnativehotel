@@ -152,13 +152,21 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           filteredBookings.map((b) => {
             const isPending = b.status === 'PENDING';
             const hasVoucher = !!b.voucherFileName;
+            const iconColor =
+              b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
+                ? '#16A34A'
+                : b.status === 'PENDING'
+                ? '#EA580C'
+                : b.status === 'CANCELLED' || b.status === 'REJECTED'
+                ? '#DC2626'
+                : '#64748B';
 
             return (
               <View key={b.id} style={styles.bookingCard}>
-                {/* Header Card con código y estado limpio sin bordes amarillos */}
+                {/* Header Card con código y estado limpio */}
                 <View style={styles.cardHeader}>
                   <View style={styles.bookingCodeRow}>
-                    <Ionicons name="bookmark" size={16} color="#488C8C" />
+                    <Ionicons name="bookmark" size={16} color={iconColor} />
                     <Text style={styles.bookingCodeText}>
                       {b.bookingId}
                     </Text>
