@@ -9,11 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { authApi, User } from '../api/auth.api';
 import { QuickTestButtons } from '../components/QuickTestButtons';
+import { FloatingLabelInput } from '../../../components/FloatingLabelInput';
+
+const { width } = Dimensions.get('window');
 
 interface LoginPageProps {
   onAuthSuccess: (user: User) => void;
@@ -24,6 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +56,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
 
   const handleRegister = async () => {
     if (!fullName.trim() || !email.trim() || !password.trim()) {
-      setAuthError('Por favor completa todos los campos requeridos (*).');
+      setAuthError('Por favor completa todos los campos requeridos.');
       return;
     }
     setAuthLoading(true);
@@ -81,297 +87,289 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} className="flex-1 bg-slate-100">
+    <View style={styles.container}>
+      <StatusBar style="light" translucent />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
-        className="flex-1"
       >
         <ScrollView
-          contentContainerClassName="p-5 justify-center"
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          {/* Header Brand */}
-          <View style={styles.brandBox} className="items-center my-4">
-            <View style={styles.brandIconCircle} className="w-14 h-14 rounded-full bg-white justify-center items-center mb-2.5 border border-slate-200">
-              <Ionicons name="business" size={28} color="#0F172A" />
-            </View>
-            <Text style={styles.brandTitle} className="text-[22px] font-black text-slate-900 tracking-wider">
-              AURA GRAND HOTEL
-            </Text>
-            <Text style={styles.brandSubtitle} className="text-[13px] text-slate-500 mt-1 text-center">
-              Ingresa a tu cuenta para buscar y reservar
-            </Text>
+          {/* Top Hero Section con Imagen y Corte Diagonal */}
+          <View style={styles.heroWrapper}>
+            <Image
+              source={{
+                uri: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1200&auto=format&fit=crop',
+              }}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+            
+            {/* Corte Diagonal Blanco Perfecto */}
+            <View style={styles.diagonalCut} />
           </View>
 
-          {/* Switch Tab Bar: Iniciar Sesión / Crear Cuenta */}
-          <View style={styles.tabBar} className="flex-row bg-slate-200 rounded-xl p-1 mb-4">
-            <TouchableOpacity
-              style={[styles.tabBtn, isLogin && styles.tabBtnActive]}
-              className={`flex-1 py-2.5 items-center rounded-lg ${isLogin ? 'bg-white shadow-sm' : ''}`}
-              onPress={() => {
-                setIsLogin(true);
-                setAuthError('');
-              }}
-            >
-              <Text style={[styles.tabBtnText, isLogin && styles.tabBtnTextActive]} className={`text-[14px] ${isLogin ? 'text-slate-900 font-bold' : 'text-slate-500 font-semibold'}`}>
-                Iniciar Sesión
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tabBtn, !isLogin && styles.tabBtnActive]}
-              className={`flex-1 py-2.5 items-center rounded-lg ${!isLogin ? 'bg-white shadow-sm' : ''}`}
-              onPress={() => {
-                setIsLogin(false);
-                setAuthError('');
-              }}
-            >
-              <Text style={[styles.tabBtnText, !isLogin && styles.tabBtnTextActive]} className={`text-[14px] ${!isLogin ? 'text-slate-900 font-bold' : 'text-slate-500 font-semibold'}`}>
-                Crear Cuenta
-              </Text>
-            </TouchableOpacity>
+          {/* Badge Circular Centrado Flotando sobre el Corte Diagonal (Sin recortes) */}
+          <View style={styles.circleBadge}>
+            <Text style={styles.circleBadgeText}>Aura</Text>
+            <Text style={styles.circleBadgeSub}>HOTEL</Text>
           </View>
 
-          {/* Banners de Notificación */}
-          {authError ? (
-            <View style={styles.errorBanner} className="bg-red-50 border border-red-300 rounded-xl p-3 mb-3.5">
-              <Text style={styles.errorText} className="text-red-600 text-[13px] text-center font-medium">
-                {authError}
+          {/* Formulario Limpio estilo Minimalista */}
+          <View style={styles.formContent}>
+            {/* Título del Formulario */}
+            <View style={styles.formHeader}>
+              <Text style={styles.formTitle}>
+                {isLogin ? 'Acceder' : 'Crear Cuenta'}
+              </Text>
+              <Text style={styles.formSubtitle}>
+                {isLogin
+                  ? 'Ingresa tus credenciales para continuar'
+                  : 'Regístrate para reservar habitaciones'}
               </Text>
             </View>
-          ) : null}
 
-          {authSuccess ? (
-            <View style={styles.successBanner} className="bg-emerald-50 border border-emerald-300 rounded-xl p-3 mb-3.5">
-              <Text style={styles.successText} className="text-emerald-600 text-[13px] text-center font-medium">
-                {authSuccess}
-              </Text>
-            </View>
-          ) : null}
+            {/* Notificaciones de Error / Éxito */}
+            {authError ? (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorText}>{authError}</Text>
+              </View>
+            ) : null}
 
-          {/* Card Principal de Autenticación */}
-          <View style={styles.authCard} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            {authSuccess ? (
+              <View style={styles.successBanner}>
+                <Text style={styles.successText}>{authSuccess}</Text>
+              </View>
+            ) : null}
+
             {!isLogin && (
               <>
-                <Text style={styles.label} className="text-slate-700 text-[13px] font-bold mb-1.5 mt-2">
-                  Nombre Completo *
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  className="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-3 text-slate-900 text-[15px]"
-                  placeholder="Ej: Sofia Morales"
-                  placeholderTextColor="#64748B"
+                <FloatingLabelInput
+                  label="Nombre Completo"
+                  iconName="person-outline"
                   value={fullName}
                   onChangeText={setFullName}
                 />
 
-                <Text style={styles.label} className="text-slate-700 text-[13px] font-bold mb-1.5 mt-3">
-                  DNI / Pasaporte
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  className="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-3 text-slate-900 text-[15px]"
-                  placeholder="Ej: 72891045"
-                  placeholderTextColor="#64748B"
+                <FloatingLabelInput
+                  label="DNI / Pasaporte"
+                  iconName="card-outline"
                   value={documentNumber}
                   onChangeText={setDocumentNumber}
                 />
               </>
             )}
 
-            <Text style={styles.label} className="text-slate-700 text-[13px] font-bold mb-1.5 mt-2">
-              Correo Electrónico *
-            </Text>
-            <TextInput
-              style={styles.input}
-              className="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-3 text-slate-900 text-[15px]"
-              placeholder="ejemplo@aurahotel.pe"
-              placeholderTextColor="#64748B"
-              keyboardType="email-address"
-              autoCapitalize="none"
+            <FloatingLabelInput
+              label="Correo Electrónico"
+              iconName="mail-outline"
               value={email}
               onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
 
-            <Text style={styles.label} className="text-slate-700 text-[13px] font-bold mb-1.5 mt-3">
-              Contraseña *
-            </Text>
-            <TextInput
-              style={styles.input}
-              className="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-3 text-slate-900 text-[15px]"
-              placeholder="••••••••"
-              placeholderTextColor="#64748B"
-              secureTextEntry
+            <FloatingLabelInput
+              label="Contraseña"
+              iconName="lock-closed-outline"
               value={password}
               onChangeText={setPassword}
+              isPassword
             />
 
+            {/* Botón Principal (Color Coral / Rose Acorde al Mockup) */}
             <TouchableOpacity
               style={styles.submitBtn}
-              className="bg-slate-900 rounded-xl py-3.5 items-center mt-5 shadow-sm active:bg-slate-800"
               onPress={isLogin ? handleLogin : handleRegister}
               disabled={authLoading}
+              activeOpacity={0.85}
             >
               {authLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.submitBtnText} className="text-white font-bold text-[16px] tracking-wide">
-                  {isLogin ? 'Entrar a Aura Hotel' : 'Registrarme'}
+                <Text style={styles.submitBtnText}>
+                  {isLogin ? 'SIGN IN' : 'SIGN UP'}
                 </Text>
               )}
             </TouchableOpacity>
 
-            {/* Accesos rápidos dentro del mismo card */}
+            {/* Toggle Inferior Registro / Login */}
+            <TouchableOpacity
+              style={styles.toggleFooter}
+              onPress={() => {
+                setIsLogin((prev) => !prev);
+                setAuthError('');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.toggleFooterText}>
+                {isLogin ? "DON'T HAVE AN ACCOUNT? " : 'ALREADY HAVE AN ACCOUNT? '}
+                <Text style={styles.toggleFooterBold}>
+                  {isLogin ? 'SIGN UP' : 'SIGN IN'}
+                </Text>
+              </Text>
+            </TouchableOpacity>
+
+            {/* Accesos Rápidos de Prueba */}
             {isLogin && <QuickTestButtons selectedEmail={email} onSelect={fillCredentials} />}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  scroll: {
-    padding: 20,
-    justifyContent: 'center',
-  },
-  brandBox: {
-    alignItems: 'center',
-    marginVertical: 18,
-  },
-  brandIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
     backgroundColor: '#FFFFFF',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 30,
+  },
+  heroWrapper: {
+    height: 190,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#0F172A',
+  },
+  heroImage: {
+    width: '100%',
+    height: 215,
+  },
+  diagonalCut: {
+    position: 'absolute',
+    bottom: -45,
+    left: -80,
+    right: -80,
+    height: 90,
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '-6deg' }],
+  },
+  circleBadge: {
+    position: 'absolute',
+    top: 48, // Centrado perfecto en la cabecera reducida
+    alignSelf: 'center',
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: '#E74C60', // Color Coral/Rose
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#64748B',
-    shadowOpacity: 0.1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 10,
+    zIndex: 50,
   },
-  brandTitle: {
-    fontSize: 22,
+  circleBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: 1.2,
-  },
-  brandSubtitle: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 4,
+    fontFamily: 'Sora_800ExtraBold',
+    letterSpacing: 0.5,
     textAlign: 'center',
   },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
+  circleBadgeSub: {
+    color: '#FFE4E6',
+    fontSize: 8.5,
+    fontWeight: '800',
+    fontFamily: 'Sora_700Bold',
+    letterSpacing: 1.5,
+    marginTop: -2,
   },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 10,
+  formContent: {
+    paddingHorizontal: 26,
+    paddingTop: 10,
+  },
+  formHeader: {
+    marginBottom: 14,
     alignItems: 'center',
-    borderRadius: 8,
   },
-  tabBtnActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+  formTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    fontFamily: 'Sora_800ExtraBold',
+    color: '#0F172A',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
-  tabBtnText: {
+  formSubtitle: {
+    fontSize: 12,
+    fontFamily: 'Sora_400Regular',
     color: '#64748B',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  tabBtnTextActive: {
-    color: '#0F172A',
-    fontWeight: '700',
-  },
-  errorBanner: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FCA5A5',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-  },
-  errorText: {
-    color: '#DC2626',
-    fontSize: 13,
+    marginTop: 2,
     textAlign: 'center',
-    fontWeight: '500',
-  },
-  successBanner: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#86EFAC',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-  },
-  successText: {
-    color: '#16A34A',
-    fontSize: 13,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  authCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 22,
-    shadowColor: '#64748B',
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  label: {
-    color: '#334155',
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 6,
-    marginTop: 10,
-  },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#CBD5E1',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: '#0F172A',
-    fontSize: 15,
   },
   submitBtn: {
-    backgroundColor: '#0F172A',
-    borderRadius: 10,
+    backgroundColor: '#E74C60', // Mismo tono Coral / Rose del badge
+    borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.2,
+    marginTop: 16,
+    shadowColor: '#E74C60',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-    letterSpacing: 0.5,
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: 'Sora_700Bold',
+    letterSpacing: 1.5,
+  },
+  toggleFooter: {
+    alignItems: 'center',
+    marginTop: 18,
+    paddingVertical: 6,
+  },
+  toggleFooterText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '700',
+    fontFamily: 'Sora_600SemiBold',
+    letterSpacing: 0.8,
+  },
+  toggleFooterBold: {
+    color: '#0F172A',
+    fontWeight: '900',
+    fontFamily: 'Sora_800ExtraBold',
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  successBanner: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+  },
+  successText: {
+    color: '#16A34A',
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });

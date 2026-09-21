@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface QuickTestButtonsProps {
@@ -13,149 +13,76 @@ export const QuickTestButtons: React.FC<QuickTestButtonsProps> = ({ selectedEmai
   const isAdmin = selectedEmail === 'admin@aurahotel.pe';
 
   return (
-    <View style={styles.container} className="mt-5 pt-4 border-t border-slate-100">
-      <View style={styles.divider} className="flex-row items-center mb-3">
-        <View style={styles.line} className="flex-1 h-[1px] bg-slate-200" />
-        <Text style={styles.title} className="text-slate-400 text-[11px] font-bold px-2 uppercase tracking-wider">
-          Accesos de prueba rápidos
-        </Text>
-        <View style={styles.line} className="flex-1 h-[1px] bg-slate-200" />
-      </View>
+    <View style={styles.container}>
+      {/* HUÉSPED */}
+      <TouchableOpacity
+        style={[styles.iconBtn, isHuesped && styles.iconBtnActive]}
+        onPress={() => onSelect('huesped@aurahotel.pe', 'Huésped')}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="person-outline"
+          size={19}
+          color={isHuesped ? '#FFFFFF' : '#64748B'}
+        />
+      </TouchableOpacity>
 
-      <View style={styles.row} className="flex-row gap-2">
-        {/* HUÉSPED */}
-        <TouchableOpacity
-          style={[styles.btn, isHuesped && styles.btnActive]}
-          className={`flex-1 py-2.5 rounded-xl items-center border ${
-            isHuesped
-              ? 'bg-slate-900 border-slate-900 shadow-sm'
-              : 'bg-slate-50 border-slate-200 active:bg-slate-100'
-          }`}
-          onPress={() => onSelect('huesped@aurahotel.pe', 'Huésped')}
-        >
-          <Ionicons
-            name="person-outline"
-            size={16}
-            color={isHuesped ? '#FFFFFF' : '#475569'}
-            style={{ marginBottom: 2 }}
-          />
-          <Text
-            style={[styles.btnText, isHuesped && styles.btnTextActive]}
-            className={`text-[11px] font-bold ${isHuesped ? 'text-white' : 'text-slate-700'}`}
-          >
-            Huésped
-          </Text>
-        </TouchableOpacity>
+      {/* RECEPCIÓN */}
+      <TouchableOpacity
+        style={[styles.iconBtn, isRecepcion && styles.iconBtnActive]}
+        onPress={() => onSelect('recepcion@aurahotel.pe', 'Recepción')}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="desktop-outline"
+          size={19}
+          color={isRecepcion ? '#FFFFFF' : '#64748B'}
+        />
+      </TouchableOpacity>
 
-        {/* RECEPCIÓN */}
-        <TouchableOpacity
-          style={[styles.btn, isRecepcion && styles.btnActive]}
-          className={`flex-1 py-2.5 rounded-xl items-center border ${
-            isRecepcion
-              ? 'bg-slate-900 border-slate-900 shadow-sm'
-              : 'bg-slate-50 border-slate-200 active:bg-slate-100'
-          }`}
-          onPress={() => onSelect('recepcion@aurahotel.pe', 'Recepción')}
-        >
-          <Ionicons
-            name="desktop-outline"
-            size={16}
-            color={isRecepcion ? '#FFFFFF' : '#475569'}
-            style={{ marginBottom: 2 }}
-          />
-          <Text
-            style={[styles.btnText, isRecepcion && styles.btnTextActive]}
-            className={`text-[11px] font-bold ${isRecepcion ? 'text-white' : 'text-slate-700'}`}
-          >
-            Recepción
-          </Text>
-        </TouchableOpacity>
-
-        {/* ADMIN */}
-        <TouchableOpacity
-          style={[styles.btn, isAdmin && styles.btnActive]}
-          className={`flex-1 py-2.5 rounded-xl items-center border ${
-            isAdmin
-              ? 'bg-slate-900 border-slate-900 shadow-sm'
-              : 'bg-slate-50 border-slate-200 active:bg-slate-100'
-          }`}
-          onPress={() => onSelect('admin@aurahotel.pe', 'Admin')}
-        >
-          <Ionicons
-            name="shield-checkmark-outline"
-            size={16}
-            color={isAdmin ? '#FFFFFF' : '#475569'}
-            style={{ marginBottom: 2 }}
-          />
-          <Text
-            style={[styles.btnText, isAdmin && styles.btnTextActive]}
-            className={`text-[11px] font-bold ${isAdmin ? 'text-white' : 'text-slate-700'}`}
-          >
-            Admin
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.hint} className="text-slate-400 text-[11px] text-center mt-2.5">
-        Contraseña única: Aura2026!
-      </Text>
+      {/* ADMIN */}
+      <TouchableOpacity
+        style={[styles.iconBtn, isAdmin && styles.iconBtnActive]}
+        onPress={() => onSelect('admin@aurahotel.pe', 'Admin')}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="shield-checkmark-outline"
+          size={19}
+          color={isAdmin ? '#FFFFFF' : '#64748B'}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 14,
     marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    paddingBottom: 8,
   },
-  divider: {
-    flexDirection: 'row',
+  iconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F1F5F9', // Gris pizarra suave y limpio
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  title: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '700',
-    paddingHorizontal: 8,
-    textTransform: 'uppercase',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  btn: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  btnActive: {
+  iconBtnActive: {
     backgroundColor: '#0F172A',
-    borderColor: '#0F172A',
-  },
-  btnText: {
-    color: '#475569',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  btnTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  hint: {
-    color: '#94A3B8',
-    fontSize: 11,
-    textAlign: 'center',
-    marginTop: 8,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
 });

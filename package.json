@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@expo-google-fonts/sora": "^0.4.2",
     "@expo/metro-config": "~57.0.0",
     "@expo/ui": "~57.0.19",
     "@expo/vector-icons": "^15.0.2",
