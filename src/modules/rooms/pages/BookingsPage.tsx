@@ -252,7 +252,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                       variant="solid"
                       size="md"
                       iconName="cloud-upload-outline"
-                      style={{ paddingVertical: 15, minHeight: 52, borderRadius: 14 }}
+                      style={{ paddingVertical: 11, minHeight: 44, borderRadius: 12 }}
                       onPress={() => handlePickAndUploadVoucher(b)}
                       loading={uploadingId === b.id}
                     />
