@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '../../auth/api/auth.api';
-import { roomsApi, Booking } from '../api/rooms.api';
+import { roomsApi, Booking, Room } from '../api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
+import { RoomDetailModal } from '../components/RoomDetailModal';
 
 interface BookingsPageProps {
   currentUser: User;
@@ -25,6 +26,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<BookingCategory>('PENDING');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [detailRoom, setDetailRoom] = useState<Room | null>(null);
 
   useEffect(() => {
     loadBookings();
@@ -219,9 +221,21 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
 
                 {/* Room Info */}
                 <View style={styles.cardBody}>
-                  <Text style={styles.roomTitle}>
-                    {b.room?.title || 'Habitación en Aura Grand Hotel'}
-                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      if (b.room) setDetailRoom(b.room);
+                    }}
+                    style={styles.roomTitleTouchable}
+                  >
+                    <Text style={styles.roomTitle}>
+                      {b.room?.title || 'Habitación en Aura Grand Hotel'}
+                    </Text>
+                    <View style={styles.viewDetailBadge}>
+                      <Text style={styles.viewDetailText}>Ver detalle</Text>
+                      <Ionicons name="chevron-forward" size={13} color="#488C8C" />
+                    </View>
+                  </TouchableOpacity>
                   
                   <View style={styles.infoRow}>
                     <Ionicons name="calendar-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
@@ -283,6 +297,15 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           })
         )}
       </ScrollView>
+
+      {/* Modal Detalles de Habitación */}
+      <RoomDetailModal
+        room={detailRoom}
+        onClose={() => setDetailRoom(null)}
+        onBook={() => {
+          setDetailRoom(null);
+        }}
+      />
     </View>
   );
 };
@@ -429,10 +452,32 @@ const styles = StyleSheet.create({
   cardBody: {
     paddingVertical: 10,
   },
+  roomTitleTouchable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   roomTitle: {
     color: '#0F172A',
     fontWeight: '900',
     fontSize: 16,
+    flex: 1,
+    paddingRight: 8,
+  },
+  viewDetailBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EBF4F4',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  viewDetailText: {
+    color: '#488C8C',
+    fontSize: 11,
+    fontWeight: '700',
+    marginRight: 2,
   },
   infoRow: {
     flexDirection: 'row',
