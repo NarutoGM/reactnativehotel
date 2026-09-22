@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'profile';
+export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'board' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: MainTabType;
@@ -54,22 +54,39 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, role = 'G
         </>
       )}
 
-      {/* Pestaña de Gestión para Recepción y Admin */}
+      {/* Pestañas de Gestión y Tablero para Recepción y Admin */}
       {isAdminOrReception && (
-        <TouchableOpacity
-          style={styles.tabBtn}
-          onPress={() => onTabChange('adminRooms')}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name={activeTab === 'adminRooms' ? 'settings' : 'settings-outline'}
-            size={22}
-            color={activeTab === 'adminRooms' ? '#488C8C' : '#94A3B8'}
-          />
-          <Text style={[styles.tabLabel, activeTab === 'adminRooms' && styles.tabLabelActive]}>
-            Gestión
-          </Text>
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={styles.tabBtn}
+            onPress={() => onTabChange('adminRooms')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={activeTab === 'adminRooms' ? 'settings' : 'settings-outline'}
+              size={22}
+              color={activeTab === 'adminRooms' ? '#488C8C' : '#94A3B8'}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'adminRooms' && styles.tabLabelActive]}>
+              Gestión
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tabBtn}
+            onPress={() => onTabChange('board')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={activeTab === 'board' ? 'calendar' : 'calendar-outline'}
+              size={22}
+              color={activeTab === 'board' ? '#488C8C' : '#94A3B8'}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'board' && styles.tabLabelActive]}>
+              Tablero
+            </Text>
+          </TouchableOpacity>
+        </>
       )}
 
       <TouchableOpacity

@@ -111,6 +111,18 @@ export const roomsApi = {
     };
   },
 
+  async getCalendarRooms(startDate?: string, endDate?: string): Promise<{ success: boolean; rooms: (Room & { bookings?: Booking[] })[]; error?: string }> {
+    const res = await httpClient.get<(Room & { bookings?: Booking[] })[]>('/rooms/calendar', {
+      startDate,
+      endDate,
+    });
+    return {
+      success: res.success,
+      rooms: Array.isArray(res.data) ? res.data : [],
+      error: res.error,
+    };
+  },
+
   async getRoomById(id: string): Promise<{ success: boolean; room?: Room; error?: string }> {
     const res = await httpClient.get<Room>(`/rooms/${id}`);
     return {

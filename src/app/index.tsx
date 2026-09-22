@@ -7,6 +7,7 @@ import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ProfilePage } from '@/modules/auth/pages/ProfilePage';
 import { RoomsPage } from '@/modules/rooms/pages/RoomsPage';
 import { AdminRoomsPage } from '@/modules/rooms/pages/AdminRoomsPage';
+import { BoardPage } from '@/modules/rooms/pages/BoardPage';
 import { BookingsPage } from '@/modules/bookings/pages/BookingsPage';
 import { BottomNavBar, MainTabType } from '@/components/BottomNavBar';
 import { UserMenuHeader } from '@/components/UserMenuHeader';
@@ -51,6 +52,7 @@ export default function AppScreen() {
         )}
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
         {activeTab === 'adminRooms' && <AdminRoomsPage />}
+        {activeTab === 'board' && <BoardPage />}
         {activeTab === 'profile' && (
           <ProfilePage
             currentUser={currentUser}

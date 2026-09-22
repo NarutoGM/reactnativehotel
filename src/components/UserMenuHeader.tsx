@@ -29,7 +29,7 @@ export const UserMenuHeader: React.FC<UserMenuHeaderProps> = ({
   };
 
   const initials = getInitials(currentUser.fullName);
-  const topOffset = Math.max(insets.top, Platform.OS === 'android' ? 52 : 56);
+  const topOffset = insets.top + (Platform.OS === 'android' ? 64 : 68);
 
   return (
     <View className="flex-row justify-between items-center px-4 py-3 bg-white border-b border-slate-200">
