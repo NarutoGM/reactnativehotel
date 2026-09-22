@@ -39,6 +39,7 @@ export const BoardPage: React.FC = () => {
   const [manualNights, setManualNights] = useState('1');
   const [manualTotalAmount, setManualTotalAmount] = useState('0');
   const [manualStatus, setManualStatus] = useState<'CONFIRMED' | 'CHECKED_IN' | 'PENDING'>('CONFIRMED');
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [creatingManualBooking, setCreatingManualBooking] = useState(false);
 
   // Calcular rango de días para el mes visible
@@ -842,63 +843,38 @@ export const BoardPage: React.FC = () => {
                   </Text>
                 </View>
 
-                {/* Selector de Estado Inicial */}
-                <View className="mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-                  <Text className="text-[11.5px] font-bold text-slate-600 mb-2">
+                {/* Selector de Estado Inicial (Select) */}
+                <View className="mt-1 mb-1">
+                  <Text className="text-[11.5px] font-bold text-slate-600 mb-1.5 ml-1">
                     Estado de la Reserva:
                   </Text>
-                  <View className="flex-row gap-2">
-                    <TouchableOpacity
-                      className={`flex-1 py-2 items-center rounded-xl border ${
-                        manualStatus === 'CONFIRMED'
-                          ? 'bg-[#0A3B7B] border-[#0A3B7B]'
-                          : 'bg-white border-slate-200'
-                      }`}
-                      onPress={() => setManualStatus('CONFIRMED')}
-                    >
-                      <Text
-                        className={`text-[11px] font-black ${
-                          manualStatus === 'CONFIRMED' ? 'text-white' : 'text-slate-700'
-                        }`}
-                      >
-                        CONFIRMADA
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setStatusDropdownOpen(true)}
+                    className="bg-[#F8FAFC] border-[1.2px] border-slate-300 rounded-2xl px-4 py-3.5 flex-row justify-between items-center"
+                  >
+                    <View className="flex-row items-center gap-2.5">
+                      <View
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor:
+                            manualStatus === 'CONFIRMED'
+                              ? '#0A3B7B'
+                              : manualStatus === 'CHECKED_IN'
+                              ? '#488C8C'
+                              : '#F59E0B',
+                        }}
+                      />
+                      <Text className="text-[13.5px] font-bold text-slate-800">
+                        {manualStatus === 'CONFIRMED'
+                          ? 'Confirmada'
+                          : manualStatus === 'CHECKED_IN'
+                          ? 'En Estadía (Check-In)'
+                          : 'Pendiente de Pago'}
                       </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      className={`flex-1 py-2 items-center rounded-xl border ${
-                        manualStatus === 'CHECKED_IN'
-                          ? 'bg-[#488C8C] border-[#488C8C]'
-                          : 'bg-white border-slate-200'
-                      }`}
-                      onPress={() => setManualStatus('CHECKED_IN')}
-                    >
-                      <Text
-                        className={`text-[11px] font-black ${
-                          manualStatus === 'CHECKED_IN' ? 'text-white' : 'text-slate-700'
-                        }`}
-                      >
-                        EN ESTADÍA
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      className={`flex-1 py-2 items-center rounded-xl border ${
-                        manualStatus === 'PENDING'
-                          ? 'bg-[#F59E0B] border-[#F59E0B]'
-                          : 'bg-white border-slate-200'
-                      }`}
-                      onPress={() => setManualStatus('PENDING')}
-                    >
-                      <Text
-                        className={`text-[11px] font-black ${
-                          manualStatus === 'PENDING' ? 'text-white' : 'text-slate-700'
-                        }`}
-                      >
-                        PENDIENTE
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                    </View>
+                    <Ionicons name="chevron-down" size={18} color="#64748B" />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Botones con LuxuryButton */}
@@ -980,6 +956,114 @@ export const BoardPage: React.FC = () => {
         }}
         onClose={() => setCalendarTarget(null)}
       />
+
+      {/* MODAL 3: SELECTOR DE ESTADO DE RESERVA */}
+      <Modal
+        visible={statusDropdownOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setStatusDropdownOpen(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-end sm:justify-center items-center px-4"
+          activeOpacity={1}
+          onPress={() => setStatusDropdownOpen(false)}
+        >
+          <View
+            className="w-full max-w-[380px] bg-white rounded-3xl p-5 mb-6 sm:mb-0 shadow-2xl border border-slate-100"
+            onStartShouldSetResponder={() => true}
+          >
+            <View className="flex-row items-center justify-between pb-3.5 border-b border-slate-100 mb-3">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="options-outline" size={20} color="#488C8C" />
+                <Text className="text-[16px] font-black text-slate-900">
+                  Estado de la Reserva
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setStatusDropdownOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 items-center justify-center"
+              >
+                <Ionicons name="close" size={18} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="gap-2.5">
+              {[
+                {
+                  value: 'CONFIRMED' as const,
+                  label: 'Confirmada',
+                  desc: 'Reserva garantizada y confirmada',
+                  color: '#0A3B7B',
+                  bg: '#EFF6FF',
+                  border: '#BFDBFE',
+                  icon: 'shield-checkmark',
+                },
+                {
+                  value: 'CHECKED_IN' as const,
+                  label: 'En Estadía (Check-In)',
+                  desc: 'Huésped registrado e instalado',
+                  color: '#488C8C',
+                  bg: '#EBF4F4',
+                  border: '#CDE5E5',
+                  icon: 'key',
+                },
+                {
+                  value: 'PENDING' as const,
+                  label: 'Pendiente de Pago',
+                  desc: 'Apartada a espera de liquidación',
+                  color: '#D97706',
+                  bg: '#FFFBEB',
+                  border: '#FDE68A',
+                  icon: 'time',
+                },
+              ].map((opt) => {
+                const isSelected = manualStatus === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setManualStatus(opt.value);
+                      setStatusDropdownOpen(false);
+                    }}
+                    style={{
+                      backgroundColor: isSelected ? opt.bg : '#F8FAFC',
+                      borderColor: isSelected ? opt.color : '#E2E8F0',
+                      borderWidth: isSelected ? 2 : 1,
+                    }}
+                    className="p-3.5 rounded-2xl flex-row items-center justify-between"
+                  >
+                    <View className="flex-row items-center gap-3 flex-1">
+                      <View
+                        className="w-10 h-10 rounded-xl items-center justify-center"
+                        style={{ backgroundColor: opt.bg }}
+                      >
+                        <Ionicons name={opt.icon as any} size={20} color={opt.color} />
+                      </View>
+                      <View className="flex-1">
+                        <Text
+                          className="text-[14px] font-bold"
+                          style={{ color: isSelected ? opt.color : '#1E293B' }}
+                        >
+                          {opt.label}
+                        </Text>
+                        <Text className="text-[11.5px] text-slate-500 font-medium mt-0.5">
+                          {opt.desc}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={22} color={opt.color} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
