@@ -332,26 +332,26 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                     return (
                       <View
                         className={`mt-2.5 border rounded-xl px-3 py-2 flex-row items-center justify-between ${
-                          isUrgent ? 'bg-red-50/80 border-red-200' : 'bg-amber-50/80 border-amber-200'
+                          isUrgent ? 'bg-red-50/80 border-red-200' : 'bg-[#EBF4F4] border-[#CDE5E5]'
                         }`}
                       >
                         <View className="flex-row items-center gap-1.5 flex-1">
                           <Ionicons
                             name="time-outline"
                             size={16}
-                            color={isUrgent ? '#DC2626' : '#D97706'}
+                            color={isUrgent ? '#DC2626' : '#488C8C'}
                           />
                           <Text
                             className={`text-[11px] font-bold ${
-                              isUrgent ? 'text-red-700' : 'text-amber-800'
+                              isUrgent ? 'text-red-700' : 'text-[#2D5A5A]'
                             }`}
                           >
                             Tiempo para subir comprobante:
                           </Text>
                         </View>
                         <View
-                          className={`px-2 py-0.5 rounded-lg ${
-                            isUrgent ? 'bg-red-600' : 'bg-amber-600'
+                          className={`px-2.5 py-0.5 rounded-lg ${
+                            isUrgent ? 'bg-red-600' : 'bg-[#488C8C]'
                           }`}
                         >
                           <Text className="text-white text-[12px] font-black tracking-wider">
