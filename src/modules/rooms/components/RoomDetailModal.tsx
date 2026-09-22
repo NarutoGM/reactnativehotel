@@ -142,8 +142,8 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </View>
             </ScrollView>
 
-            {/* Barra inferior fija */}
-            <View className="px-5 py-3.5 bg-white border-t border-slate-100 flex-row gap-3 shadow-md elevation-8">
+            {/* Barra inferior fija sin fondo ni borde pesado */}
+            <View className="px-5 py-3.5 flex-row gap-3">
               <View className="flex-1">
                 <LuxuryButton
                   title="Cerrar"
