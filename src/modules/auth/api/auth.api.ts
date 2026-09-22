@@ -70,4 +70,25 @@ export const authApi = {
       error: res.error,
     };
   },
+
+  async getAllUsers(): Promise<{ success: boolean; users?: User[]; error?: string }> {
+    const res = await httpClient.get<User[]>('/auth/users');
+    return {
+      success: res.success,
+      users: Array.isArray(res.data) ? res.data : [],
+      error: res.error,
+    };
+  },
+
+  async createUser(payload: RegisterPayload): Promise<{ success: boolean; user?: User; error?: string }> {
+    const res = await httpClient.post<User>('/auth/register', {
+      ...payload,
+      role: payload.role || 'GUEST',
+    });
+    return {
+      success: res.success,
+      user: res.data,
+      error: res.error,
+    };
+  },
 };
