@@ -88,7 +88,7 @@ export default function AppScreen() {
           />
         )}
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
-        {activeTab === 'adminRooms' && <AdminRoomsPage />}
+        {activeTab === 'adminRooms' && <AdminRoomsPage currentUser={currentUser} />}
         {activeTab === 'board' && <BoardPage />}
         {activeTab === 'users' && <AdminUsersPage />}
         {activeTab === 'profile' && (

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { User } from '@/modules/auth/api/auth.api';
 import { bookingsApi, Booking } from '../api/bookings.api';
 import { Room } from '@/modules/rooms/api/rooms.api';
@@ -34,6 +35,7 @@ const getVouchers = (voucherFileName?: string | null): string[] => {
 };
 
 export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'RECEPTIONIST';
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<BookingCategory>('PENDING');
@@ -140,57 +142,56 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     }
   };
 
-  const [confirmingBookingId, setConfirmingBookingId] = useState<string | null>(null);
-  const [rejectingBookingId, setRejectingBookingId] = useState<string | null>(null);
+  const [confirmModalTarget, setConfirmModalTarget] = useState<Booking | null>(null);
+  const [rejectModalTarget, setRejectModalTarget] = useState<Booking | null>(null);
+  const [confirmingLoading, setConfirmingLoading] = useState(false);
+  const [rejectingLoading, setRejectingLoading] = useState(false);
+  const [statusSuccessMessage, setStatusSuccessMessage] = useState<{ title: string; message: string; badge?: string } | null>(null);
 
-  const handleApproveBooking = async (booking: Booking) => {
-    Alert.alert(
-      'Aceptar Reserva',
-      `¿Deseas validar el comprobante y CONFIRMAR la reserva #${booking.bookingId}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Confirmar Reserva',
-          style: 'default',
-          onPress: async () => {
-            setConfirmingBookingId(booking.id);
-            const res = await bookingsApi.updateBookingStatus(booking.id, 'CONFIRMED');
-            setConfirmingBookingId(null);
-            if (res.success) {
-              Alert.alert('Reserva Confirmada', `La reserva #${booking.bookingId} ha sido aceptada y confirmada con éxito.`);
-              loadBookings();
-            } else {
-              Alert.alert('Error', res.error || 'No se pudo confirmar la reserva.');
-            }
-          },
-        },
-      ]
-    );
+  const handleApproveBooking = (booking: Booking) => {
+    setConfirmModalTarget(booking);
   };
 
-  const handleRejectBooking = async (booking: Booking) => {
-    Alert.alert(
-      'Rechazar / Cancelar Reserva',
-      `¿Deseas rechazar la reserva #${booking.bookingId}? Esta acción cancelará la reserva y liberará las fechas.`,
-      [
-        { text: 'Volver', style: 'cancel' },
-        {
-          text: 'Rechazar Reserva',
-          style: 'destructive',
-          onPress: async () => {
-            setRejectingBookingId(booking.id);
-            const res = await bookingsApi.updateBookingStatus(booking.id, 'CANCELLED');
-            setRejectingBookingId(null);
-            if (res.success) {
-              Alert.alert('Reserva Cancelada', `La reserva #${booking.bookingId} ha sido cancelada.`);
-              loadBookings();
-            } else {
-              Alert.alert('Error', res.error || 'No se pudo cancelar la reserva.');
-            }
-          },
-        },
-      ]
-    );
+  const handleConfirmApprove = async () => {
+    if (!confirmModalTarget) return;
+    setConfirmingLoading(true);
+    const res = await bookingsApi.updateBookingStatus(confirmModalTarget.id, 'CONFIRMED');
+    setConfirmingLoading(false);
+    const code = confirmModalTarget.bookingId;
+    setConfirmModalTarget(null);
+    if (res.success) {
+      setStatusSuccessMessage({
+        title: '¡Reserva Confirmada!',
+        message: 'La reserva ha sido aceptada y confirmada con éxito. El huésped ha sido notificado.',
+        badge: `Código: #${code}`,
+      });
+      loadBookings();
+    } else {
+      Alert.alert('Error', res.error || 'No se pudo confirmar la reserva.');
+    }
+  };
+
+  const handleRejectBooking = (booking: Booking) => {
+    setRejectModalTarget(booking);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectModalTarget) return;
+    setRejectingLoading(true);
+    const res = await bookingsApi.updateBookingStatus(rejectModalTarget.id, 'CANCELLED');
+    setRejectingLoading(false);
+    const code = rejectModalTarget.bookingId;
+    setRejectModalTarget(null);
+    if (res.success) {
+      setStatusSuccessMessage({
+        title: 'Reserva Cancelada',
+        message: 'La reserva ha sido rechazada y las fechas han quedado liberadas en el calendario.',
+        badge: `Código: #${code}`,
+      });
+      loadBookings();
+    } else {
+      Alert.alert('Error', res.error || 'No se pudo cancelar la reserva.');
+    }
   };
 
   const filteredBookings = bookings.filter((b) => {
@@ -450,6 +451,89 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                       </Text>
                     </View>
                   </View>
+
+                  {/* Datos del Cliente / Huésped (Visible para Recepcionista y Admin) */}
+                  {isAdmin && (
+                    <View className="mt-2.5 pt-2.5 border-t border-slate-100">
+                      <Text className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                        Datos del Cliente
+                      </Text>
+                      <View className="flex-row items-center gap-3">
+                        {/* Avatar o Iniciales con Degradé (Círculo perfecto) */}
+                        {b.user?.avatarUrl ? (
+                          <Image
+                            source={{ uri: b.user.avatarUrl }}
+                            style={{ width: 42, height: 42, borderRadius: 21 }}
+                            className="bg-slate-200"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: 21,
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <LinearGradient
+                              colors={['#488C8C', '#2D5A5A']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 21,
+                              }}
+                            >
+                              <Text className="text-white font-black text-[13px] tracking-wider">
+                                {(() => {
+                                  const name = (b.guestName || b.user?.fullName || 'H').trim();
+                                  const parts = name.split(' ').filter(Boolean);
+                                  if (parts.length >= 2) {
+                                    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                                  }
+                                  return name.slice(0, 2).toUpperCase();
+                                })()}
+                              </Text>
+                            </LinearGradient>
+                          </View>
+                        )}
+
+                        {/* Información de contacto sin icon de correo */}
+                        <View className="flex-1">
+                          <Text className="text-slate-900 text-[13.5px] font-bold" numberOfLines={1}>
+                            {b.guestName || b.user?.fullName || 'Huésped no especificado'}
+                          </Text>
+                          <Text className="text-slate-500 text-[12px] font-medium mt-0.5" numberOfLines={1}>
+                            {b.guestEmail || b.user?.email || 'Sin correo registrado'}
+                          </Text>
+                          {!!(b.user?.phone || b.user?.documentNumber) && (
+                            <View className="flex-row items-center flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                              {!!b.user?.phone && b.user.phone !== 'No registrado' && (
+                                <View className="flex-row items-center">
+                                  <Ionicons name="call-outline" size={12} color="#488C8C" style={{ marginRight: 4 }} />
+                                  <Text className="text-slate-600 text-[11.5px] font-semibold">
+                                    {b.user.phone}
+                                  </Text>
+                                </View>
+                              )}
+                              {!!b.user?.documentNumber && b.user.documentNumber !== 'N/A' && (
+                                <View className="flex-row items-center">
+                                  <Ionicons name="card-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
+                                  <Text className="text-slate-500 text-[11.5px] font-medium">
+                                    Doc: {b.user.documentNumber}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  )}
                 </View>
 
                 {/* Voucher Action: Comprobantes sin borde/bg pesado, hasta 2 comprobantes */}
@@ -529,33 +613,19 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleRejectBooking(b)}
-                          disabled={rejectingBookingId === b.id || confirmingBookingId === b.id}
                           className="flex-1 py-2.5 bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row gap-1.5"
                         >
-                          {rejectingBookingId === b.id ? (
-                            <ActivityIndicator size="small" color="#DC2626" />
-                          ) : (
-                            <>
-                              <Ionicons name="close-circle-outline" size={16} color="#DC2626" />
-                              <Text className="text-[12px] font-extrabold text-red-600">Rechazar</Text>
-                            </>
-                          )}
+                          <Ionicons name="close-circle-outline" size={16} color="#DC2626" />
+                          <Text className="text-[12px] font-extrabold text-red-600">Rechazar</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleApproveBooking(b)}
-                          disabled={confirmingBookingId === b.id || rejectingBookingId === b.id}
                           className="flex-[1.5] py-2.5 bg-[#488C8C] rounded-xl items-center justify-center flex-row gap-1.5 shadow-sm"
                         >
-                          {confirmingBookingId === b.id ? (
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                          ) : (
-                            <>
-                              <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" />
-                              <Text className="text-[12px] font-black text-white">Aceptar Reserva</Text>
-                            </>
-                          )}
+                          <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" />
+                          <Text className="text-[12px] font-black text-white">Aceptar Reserva</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -577,7 +647,6 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleRejectBooking(b)}
-                          disabled={rejectingBookingId === b.id}
                           className="flex-1 py-2.5 bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row gap-1"
                         >
                           <Ionicons name="close-circle-outline" size={15} color="#DC2626" />
@@ -586,7 +655,6 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleApproveBooking(b)}
-                          disabled={confirmingBookingId === b.id}
                           className="flex-[1.3] py-2.5 bg-[#488C8C] rounded-xl items-center justify-center flex-row gap-1"
                         >
                           <Ionicons name="checkmark-circle-outline" size={15} color="#FFFFFF" />
@@ -656,6 +724,44 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         loading={deletingVoucher}
         onConfirm={handleConfirmDeleteVoucher}
         onCancel={() => setDeleteVoucherTarget(null)}
+      />
+
+      {/* Modal Personalizado para Aceptar / Confirmar Reserva */}
+      <ConfirmModal
+        visible={!!confirmModalTarget}
+        title="Aceptar Reserva"
+        message={`¿Deseas validar el comprobante y CONFIRMAR la reserva #${confirmModalTarget?.bookingId}?`}
+        confirmText="Confirmar Reserva"
+        cancelText="Cancelar"
+        variant="brand"
+        iconName="checkmark-circle-outline"
+        loading={confirmingLoading}
+        onConfirm={handleConfirmApprove}
+        onCancel={() => setConfirmModalTarget(null)}
+      />
+
+      {/* Modal Personalizado para Rechazar / Cancelar Reserva */}
+      <ConfirmModal
+        visible={!!rejectModalTarget}
+        title="Rechazar Reserva"
+        message={`¿Deseas rechazar la reserva #${rejectModalTarget?.bookingId}? Esta acción cancelará la reserva y liberará las fechas.`}
+        confirmText="Rechazar Reserva"
+        cancelText="Volver"
+        variant="danger"
+        iconName="close-circle-outline"
+        loading={rejectingLoading}
+        onConfirm={handleConfirmReject}
+        onCancel={() => setRejectModalTarget(null)}
+      />
+
+      {/* Modal Personalizado de Éxito de Estado */}
+      <SuccessModal
+        visible={!!statusSuccessMessage}
+        title={statusSuccessMessage?.title || 'Éxito'}
+        message={statusSuccessMessage?.message || ''}
+        badgeText={statusSuccessMessage?.badge}
+        buttonText="Aceptar"
+        onClose={() => setStatusSuccessMessage(null)}
       />
     </View>
   );

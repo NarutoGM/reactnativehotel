@@ -20,6 +20,14 @@ export interface Booking {
   voucherSubmitted?: boolean;
   createdAt: string;
   room?: Room;
+  user?: {
+    id: string;
+    fullName: string;
+    email: string;
+    documentNumber?: string;
+    phone?: string;
+    avatarUrl?: string | null;
+  } | null;
 }
 
 export interface BookingPayload {

@@ -16,6 +16,7 @@ import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 interface EditRoomModalProps {
   visible: boolean;
   room: Room | null; // Si es null -> modo Crear, si tiene datos -> modo Editar
+  isReadOnlyExceptMaintenance?: boolean; // Si es true (Recepcionista), solo puede cambiar estado de mantenimiento
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -23,6 +24,7 @@ interface EditRoomModalProps {
 export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   visible,
   room,
+  isReadOnlyExceptMaintenance = false,
   onClose,
   onSuccess,
 }) => {
@@ -36,6 +38,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   const [pricePerNight, setPricePerNight] = useState(String(room?.pricePerNight || '180'));
   const [bedType, setBedType] = useState(room?.bedType || '1 Cama Queen');
   const [surfaceAreaM2, setSurfaceAreaM2] = useState(String(room?.surfaceAreaM2 || '28'));
+  const [isUnderMaintenance, setIsUnderMaintenance] = useState(room?.isUnderMaintenance || false);
   const [imageUrl, setImageUrl] = useState(room?.imageUrl || '');
   const [selectedFileUri, setSelectedFileUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,6 +54,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       setPricePerNight(String(room.pricePerNight));
       setBedType(room.bedType);
       setSurfaceAreaM2(String(room.surfaceAreaM2));
+      setIsUnderMaintenance(!!room.isUnderMaintenance);
       setImageUrl(room.imageUrl || '');
       setSelectedFileUri(null);
     } else {
@@ -62,6 +66,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
       setPricePerNight('180');
       setBedType('1 Cama Queen');
       setSurfaceAreaM2('28');
+      setIsUnderMaintenance(false);
       setImageUrl('');
       setSelectedFileUri(null);
     }
@@ -100,6 +105,24 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   };
 
   const handleSave = async () => {
+    // Si es recepcionista, solo actualiza el estado de mantenimiento
+    if (isReadOnlyExceptMaintenance && room) {
+      setLoading(true);
+      const res = await roomsApi.updateRoom(room.id, { isUnderMaintenance });
+      setLoading(false);
+      if (!res.success) {
+        Alert.alert('Error', res.error || 'No se pudo actualizar el estado de mantenimiento.');
+        return;
+      }
+      Alert.alert(
+        'Estado Actualizado',
+        `La habitación ${room.roomNumber} ahora está ${isUnderMaintenance ? 'EN MANTENIMIENTO' : 'OPERATIVA'}.`
+      );
+      onSuccess();
+      onClose();
+      return;
+    }
+
     if (!roomNumber.trim() || !title.trim() || !pricePerNight.trim()) {
       Alert.alert('Campos Incompletos', 'Por favor ingresa número de habitación, título y precio.');
       return;
@@ -119,6 +142,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
         pricePerNight: parseFloat(pricePerNight) || 100,
         bedType: bedType.trim(),
         surfaceAreaM2: parseInt(surfaceAreaM2, 10) || 25,
+        isUnderMaintenance,
         imageUrl: imageUrl.trim() || undefined,
       };
 
@@ -139,6 +163,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
         pricePerNight: parseFloat(pricePerNight) || 100,
         bedType: bedType.trim(),
         surfaceAreaM2: parseInt(surfaceAreaM2, 10) || 25,
+        isUnderMaintenance,
         imageUrl: imageUrl.trim() || undefined,
       };
 
@@ -182,10 +207,14 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
           <View className="flex-row justify-between items-center px-6 py-4 border-b border-slate-100">
             <View>
               <Text className="text-[11px] text-teal-700 font-bold uppercase tracking-wider">
-                Panel Administrativo
+                {isReadOnlyExceptMaintenance ? 'Panel de Recepción' : 'Panel Administrativo'}
               </Text>
               <Text className="text-[19px] font-black text-slate-900">
-                {isEditing ? `Editar Habitación ${room?.roomNumber}` : 'Nueva Habitación'}
+                {isReadOnlyExceptMaintenance
+                  ? `Estado Habitación ${room?.roomNumber}`
+                  : isEditing
+                  ? `Editar Habitación ${room?.roomNumber}`
+                  : 'Nueva Habitación'}
               </Text>
             </View>
 
@@ -199,7 +228,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
           <ScrollView className="px-5 pt-3" showsVerticalScrollIndicator={false}>
             <View className="space-y-2 pb-8">
-              {/* SUBIDA DE ARCHIVO DE IMAGEN A FIREBASE */}
+              {/* SUBIDA DE ARCHIVO DE IMAGEN A FIREBASE (Oculto para recepcionista) */}
               <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 items-center mb-2">
                 {previewImage ? (
                   <View className="w-full relative mb-3">
@@ -221,15 +250,17 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                   </View>
                 )}
 
-                <TouchableOpacity
-                  className="bg-[#488C8C] py-2.5 px-4 rounded-xl flex-row items-center gap-2 active:opacity-90 shadow-sm"
-                  onPress={handlePickImage}
-                >
-                  <Ionicons name="cloud-upload-outline" size={16} color="#FFFFFF" />
-                  <Text className="text-white text-[12px] font-bold">
-                    {previewImage ? 'Cambiar Archivo de Imagen' : 'Subir Archivo de Imagen (Firebase)'}
-                  </Text>
-                </TouchableOpacity>
+                {!isReadOnlyExceptMaintenance && (
+                  <TouchableOpacity
+                    className="bg-[#488C8C] py-2.5 px-4 rounded-xl flex-row items-center gap-2 active:opacity-90 shadow-sm"
+                    onPress={handlePickImage}
+                  >
+                    <Ionicons name="cloud-upload-outline" size={16} color="#FFFFFF" />
+                    <Text className="text-white text-[12px] font-bold">
+                      {previewImage ? 'Cambiar Archivo de Imagen' : 'Subir Archivo de Imagen (Firebase)'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {/* Número y Título */}
@@ -240,6 +271,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     iconName="key-outline"
                     value={roomNumber}
                     onChangeText={setRoomNumber}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
 
@@ -249,6 +281,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     iconName="bookmark-outline"
                     value={title}
                     onChangeText={setTitle}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
               </View>
@@ -261,6 +294,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     iconName="bed-outline"
                     value={type}
                     onChangeText={setType}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
 
@@ -271,6 +305,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     keyboardType="numeric"
                     value={floor}
                     onChangeText={setFloor}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
               </View>
@@ -284,6 +319,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     keyboardType="numeric"
                     value={capacity}
                     onChangeText={setCapacity}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
 
@@ -294,6 +330,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     keyboardType="numeric"
                     value={pricePerNight}
                     onChangeText={setPricePerNight}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
               </View>
@@ -306,6 +343,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     iconName="bed-outline"
                     value={bedType}
                     onChangeText={setBedType}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
 
@@ -316,9 +354,57 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                     keyboardType="numeric"
                     value={surfaceAreaM2}
                     onChangeText={setSurfaceAreaM2}
+                    editable={!isReadOnlyExceptMaintenance}
                   />
                 </View>
               </View>
+
+              {/* Estado de Mantenimiento */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setIsUnderMaintenance(!isUnderMaintenance)}
+                className={`p-3.5 rounded-2xl border flex-row items-center justify-between mt-1 ${
+                  isUnderMaintenance
+                    ? 'bg-amber-50 border-amber-300'
+                    : 'bg-slate-50 border-slate-200'
+                }`}
+              >
+                <View className="flex-row items-center gap-3 flex-1 pr-2">
+                  <View
+                    className={`w-9 h-9 rounded-xl items-center justify-center ${
+                      isUnderMaintenance ? 'bg-amber-500' : 'bg-slate-200'
+                    }`}
+                  >
+                    <Ionicons
+                      name="construct-outline"
+                      size={18}
+                      color={isUnderMaintenance ? '#FFFFFF' : '#64748B'}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      className={`text-[13px] font-bold ${
+                        isUnderMaintenance ? 'text-amber-900' : 'text-slate-800'
+                      }`}
+                    >
+                      En Mantenimiento
+                    </Text>
+                    <Text className="text-slate-500 text-[11px] font-medium mt-0.5">
+                      {isUnderMaintenance
+                        ? 'La habitación no estará disponible para reservas.'
+                        : 'Habitación operativa con normalidad.'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View
+                  className={`w-12 h-6 rounded-full p-0.5 justify-center ${
+                    isUnderMaintenance ? 'bg-amber-500 items-end' : 'bg-slate-300 items-start'
+                  }`}
+                >
+                  <View className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                </View>
+              </TouchableOpacity>
 
               {/* Botones Guardar / Cancelar con LuxuryButton */}
               <View className="flex-row gap-3 pt-4">
@@ -334,7 +420,13 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
                 <View className="flex-[1.4]">
                   <LuxuryButton
-                    title={isEditing ? 'Guardar Cambios' : 'Crear Habitación'}
+                    title={
+                      isReadOnlyExceptMaintenance
+                        ? 'Guardar Estado'
+                        : isEditing
+                        ? 'Guardar Cambios'
+                        : 'Crear Habitación'
+                    }
                     variant="solid"
                     loading={loading}
                     onPress={handleSave}

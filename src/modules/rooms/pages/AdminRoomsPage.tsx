@@ -14,9 +14,17 @@ import { EditRoomModal } from '../components/EditRoomModal';
 import { LuxuryButton } from '@/components/LuxuryButton';
 import { ConfirmModal } from '@/components/ConfirmModal';
 
+import { User } from '@/modules/auth/api/auth.api';
+
 export type RoomFilterCategory = 'ACTIVE' | 'INACTIVE';
 
-export const AdminRoomsPage: React.FC = () => {
+interface AdminRoomsPageProps {
+  currentUser?: User;
+}
+
+export const AdminRoomsPage: React.FC<AdminRoomsPageProps> = ({ currentUser }) => {
+  const isSuperAdmin = currentUser?.role === 'ADMIN';
+  const isReceptionist = currentUser?.role === 'RECEPTIONIST';
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<RoomFilterCategory>('ACTIVE');
@@ -86,53 +94,57 @@ export const AdminRoomsPage: React.FC = () => {
           </Text>
         </View>
 
-        <LuxuryButton
-          title="Nueva"
-          variant="solid"
-          size="sm"
-          iconName="add"
-          onPress={() => {
-            setSelectedRoomToEdit(null);
-            setEditModalVisible(true);
-          }}
-          style={{ minWidth: 90 }}
-        />
+        {isSuperAdmin && (
+          <LuxuryButton
+            title="Nueva"
+            variant="solid"
+            size="sm"
+            iconName="add"
+            onPress={() => {
+              setSelectedRoomToEdit(null);
+              setEditModalVisible(true);
+            }}
+            style={{ minWidth: 90 }}
+          />
+        )}
       </View>
 
-      {/* Segmented Tabs: Activas / Inactivas */}
-      <View className="flex-row bg-white p-1.5 mx-3.5 mt-3.5 rounded-2xl border border-slate-200 gap-1.5">
-        <TouchableOpacity
-          className={`flex-1 py-2.5 items-center rounded-xl ${
-            activeCategory === 'ACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
-          }`}
-          onPress={() => setActiveCategory('ACTIVE')}
-          activeOpacity={0.8}
-        >
-          <Text
-            className={`text-[12px] font-bold ${
-              activeCategory === 'ACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+      {/* Segmented Tabs: Activas / Inactivas (SOLO PARA ADMIN) */}
+      {isSuperAdmin && (
+        <View className="flex-row bg-white p-1.5 mx-3.5 mt-3.5 rounded-2xl border border-slate-200 gap-1.5">
+          <TouchableOpacity
+            className={`flex-1 py-2.5 items-center rounded-xl ${
+              activeCategory === 'ACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
             }`}
+            onPress={() => setActiveCategory('ACTIVE')}
+            activeOpacity={0.8}
           >
-            Activas ({activeCount})
-          </Text>
-        </TouchableOpacity>
+            <Text
+              className={`text-[12px] font-bold ${
+                activeCategory === 'ACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+              }`}
+            >
+              Activas ({activeCount})
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          className={`flex-1 py-2.5 items-center rounded-xl ${
-            activeCategory === 'INACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
-          }`}
-          onPress={() => setActiveCategory('INACTIVE')}
-          activeOpacity={0.8}
-        >
-          <Text
-            className={`text-[12px] font-bold ${
-              activeCategory === 'INACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+          <TouchableOpacity
+            className={`flex-1 py-2.5 items-center rounded-xl ${
+              activeCategory === 'INACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
             }`}
+            onPress={() => setActiveCategory('INACTIVE')}
+            activeOpacity={0.8}
           >
-            Inactivas ({inactiveCount})
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Text
+              className={`text-[12px] font-bold ${
+                activeCategory === 'INACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+              }`}
+            >
+              Inactivas ({inactiveCount})
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Lista de Habitaciones Filtrada */}
       <View className="flex-1 px-3.5 pt-3">
@@ -193,17 +205,27 @@ export const AdminRoomsPage: React.FC = () => {
                     {/* Status Badge */}
                     <View
                       className={`px-2.5 py-1 rounded-full ${
-                        item.isAvailable
+                        item.isUnderMaintenance
+                          ? 'bg-amber-100'
+                          : item.isAvailable
                           ? 'bg-emerald-100'
                           : 'bg-red-100'
                       }`}
                     >
                       <Text
                         className={`text-[10px] font-black tracking-wide ${
-                          item.isAvailable ? 'text-emerald-700' : 'text-red-700'
+                          item.isUnderMaintenance
+                            ? 'text-amber-800'
+                            : item.isAvailable
+                            ? 'text-emerald-700'
+                            : 'text-red-700'
                         }`}
                       >
-                        {item.isAvailable ? 'ACTIVA' : 'DESACTIVADA'}
+                        {item.isUnderMaintenance
+                          ? 'MANTENIMIENTO'
+                          : item.isAvailable
+                          ? 'ACTIVA'
+                          : 'DESACTIVADA'}
                       </Text>
                     </View>
                   </View>
@@ -220,26 +242,28 @@ export const AdminRoomsPage: React.FC = () => {
 
                   {/* Actions Row with Luxury Buttons */}
                   <View className="flex-row items-center pt-2.5 border-t border-slate-100 gap-2">
-                    {/* Toggle Button (Desactivar en activas / Activar en inactivas) */}
-                    <View className="flex-1">
-                      <LuxuryButton
-                        title={item.isAvailable ? 'Desactivar' : 'Activar'}
-                        variant={item.isAvailable ? 'outline' : 'solid'}
-                        size="sm"
-                        iconName={item.isAvailable ? 'pause-circle-outline' : 'play-circle-outline'}
-                        loading={isToggling}
-                        onPress={() => handleToggle(item)}
-                        style={{ width: '100%', marginTop: 0 }}
-                      />
-                    </View>
+                    {/* Toggle Button (Desactivar en activas / Activar en inactivas - SOLO ADMIN) */}
+                    {isSuperAdmin && (
+                      <View className="flex-1">
+                        <LuxuryButton
+                          title={item.isAvailable ? 'Desactivar' : 'Activar'}
+                          variant={item.isAvailable ? 'outline' : 'solid'}
+                          size="sm"
+                          iconName={item.isAvailable ? 'pause-circle-outline' : 'play-circle-outline'}
+                          loading={isToggling}
+                          onPress={() => handleToggle(item)}
+                          style={{ width: '100%', marginTop: 0 }}
+                        />
+                      </View>
+                    )}
 
-                    {/* Edit Button (Variante 1 - Solid) */}
+                    {/* Edit / Estado Button (Variante 1 - Solid) */}
                     <View className="flex-1">
                       <LuxuryButton
-                        title="Editar"
+                        title={isReceptionist ? 'Estado / Mantenimiento' : 'Editar'}
                         variant="solid"
                         size="sm"
-                        iconName="create-outline"
+                        iconName={isReceptionist ? 'construct-outline' : 'create-outline'}
                         onPress={() => {
                           setSelectedRoomToEdit(item);
                           setEditModalVisible(true);
@@ -248,8 +272,8 @@ export const AdminRoomsPage: React.FC = () => {
                       />
                     </View>
 
-                    {/* Delete Button (SOLO visible y habilitado en la pestaña de Inactivas) */}
-                    {!item.isAvailable && (
+                    {/* Delete Button (SOLO visible para Admin en la pestaña de Inactivas) */}
+                    {!item.isAvailable && isSuperAdmin && (
                       <View className="flex-1">
                         <LuxuryButton
                           title="Eliminar"
@@ -279,6 +303,7 @@ export const AdminRoomsPage: React.FC = () => {
       <EditRoomModal
         visible={editModalVisible}
         room={selectedRoomToEdit}
+        isReadOnlyExceptMaintenance={isReceptionist}
         onClose={() => setEditModalVisible(false)}
         onSuccess={() => loadAllRooms()}
       />
