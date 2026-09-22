@@ -14,9 +14,12 @@ import { EditRoomModal } from '../components/EditRoomModal';
 import { LuxuryButton } from '@/components/LuxuryButton';
 import { ConfirmModal } from '@/components/ConfirmModal';
 
+export type RoomFilterCategory = 'ACTIVE' | 'INACTIVE';
+
 export const AdminRoomsPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<RoomFilterCategory>('ACTIVE');
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingRoomTarget, setDeletingRoomTarget] = useState<Room | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -63,16 +66,12 @@ export const AdminRoomsPage: React.FC = () => {
     }
   };
 
-  const handleDeletePress = (room: Room) => {
-    if (room.isAvailable) {
-      Alert.alert(
-        'Habitación Activa',
-        'Solo puedes eliminar habitaciones que estén desactivadas. Primero desactívala.'
-      );
-      return;
-    }
-    setDeletingRoomTarget(room);
-  };
+  const filteredRooms = rooms.filter((r) =>
+    activeCategory === 'ACTIVE' ? r.isAvailable : !r.isAvailable
+  );
+
+  const activeCount = rooms.filter((r) => r.isAvailable).length;
+  const inactiveCount = rooms.filter((r) => !r.isAvailable).length;
 
   return (
     <View className="flex-1 bg-slate-100">
@@ -83,7 +82,7 @@ export const AdminRoomsPage: React.FC = () => {
             Gestión de Habitaciones
           </Text>
           <Text className="text-slate-500 text-[12px] font-medium">
-            Total: {rooms.length} · Activas: {rooms.filter((r) => r.isAvailable).length}
+            Total: {rooms.length} habitaciones
           </Text>
         </View>
 
@@ -100,26 +99,65 @@ export const AdminRoomsPage: React.FC = () => {
         />
       </View>
 
-      {/* Lista de Habitaciones para Admin */}
+      {/* Segmented Tabs: Activas / Inactivas */}
+      <View className="flex-row bg-white p-1.5 mx-3.5 mt-3.5 rounded-2xl border border-slate-200 gap-1.5">
+        <TouchableOpacity
+          className={`flex-1 py-2.5 items-center rounded-xl ${
+            activeCategory === 'ACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
+          }`}
+          onPress={() => setActiveCategory('ACTIVE')}
+          activeOpacity={0.8}
+        >
+          <Text
+            className={`text-[12px] font-bold ${
+              activeCategory === 'ACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+            }`}
+          >
+            Activas ({activeCount})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className={`flex-1 py-2.5 items-center rounded-xl ${
+            activeCategory === 'INACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
+          }`}
+          onPress={() => setActiveCategory('INACTIVE')}
+          activeOpacity={0.8}
+        >
+          <Text
+            className={`text-[12px] font-bold ${
+              activeCategory === 'INACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+            }`}
+          >
+            Inactivas ({inactiveCount})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Lista de Habitaciones Filtrada */}
       <View className="flex-1 px-3.5 pt-3">
         {loading ? (
           <View className="py-20 justify-center items-center">
             <ActivityIndicator size="large" color="#488C8C" />
             <Text className="text-slate-500 mt-2 text-[13px] font-medium">Cargando habitaciones...</Text>
           </View>
-        ) : rooms.length === 0 ? (
+        ) : filteredRooms.length === 0 ? (
           <View className="py-16 justify-center items-center px-6">
             <Ionicons name="bed-outline" size={48} color="#94A3B8" />
             <Text className="text-slate-900 text-[16px] font-bold mt-2.5">
-              No hay habitaciones registradas
+              {activeCategory === 'ACTIVE'
+                ? 'No hay habitaciones activas'
+                : 'No hay habitaciones inactivas'}
             </Text>
             <Text className="text-slate-500 text-center text-[12px] mt-1">
-              Presiona el botón "+ Nueva" para crear la primera habitación.
+              {activeCategory === 'ACTIVE'
+                ? 'Crea una nueva habitación o activa alguna desde la pestaña de Inactivas.'
+                : 'Las habitaciones desactivadas aparecerán aquí para reactivarlas o eliminarlas.'}
             </Text>
           </View>
         ) : (
           <FlatList
-            data={rooms}
+            data={filteredRooms}
             keyExtractor={(item) => item.id}
             contentContainerClassName="pb-8"
             showsVerticalScrollIndicator={false}
@@ -184,8 +222,8 @@ export const AdminRoomsPage: React.FC = () => {
 
                   {/* Actions Row with Luxury Buttons */}
                   <View className="flex-row items-center pt-2.5 border-t border-slate-100 gap-2">
-                    {/* Toggle Button */}
-                    <View className="flex-[1.2]">
+                    {/* Toggle Button (Desactivar en activas / Activar en inactivas) */}
+                    <View className="flex-1">
                       <LuxuryButton
                         title={item.isAvailable ? 'Desactivar' : 'Activar'}
                         variant={item.isAvailable ? 'outline' : 'solid'}
@@ -212,23 +250,25 @@ export const AdminRoomsPage: React.FC = () => {
                       />
                     </View>
 
-                    {/* Delete Button (Solo si está desactivada) */}
-                    <TouchableOpacity
-                      className={`h-[38px] px-3 rounded-xl justify-center items-center flex-row gap-1 border ${
-                        !item.isAvailable
-                          ? 'bg-red-50 border-red-200 active:bg-red-100'
-                          : 'bg-slate-50 border-slate-200 opacity-35'
-                      }`}
-                      onPress={() => handleDeletePress(item)}
-                      disabled={item.isAvailable}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={15}
-                        color={!item.isAvailable ? '#DC2626' : '#94A3B8'}
-                      />
-                    </TouchableOpacity>
+                    {/* Delete Button (SOLO visible y habilitado en la pestaña de Inactivas) */}
+                    {!item.isAvailable && (
+                      <View className="flex-1">
+                        <LuxuryButton
+                          title="Eliminar"
+                          variant="outline"
+                          size="sm"
+                          iconName="trash-outline"
+                          onPress={() => setDeletingRoomTarget(item)}
+                          style={{
+                            width: '100%',
+                            marginTop: 0,
+                            backgroundColor: '#FEF2F2',
+                            borderColor: '#FECACA',
+                          }}
+                          textStyle={{ color: '#DC2626' }}
+                        />
+                      </View>
+                    )}
                   </View>
                 </View>
               );
@@ -251,7 +291,7 @@ export const AdminRoomsPage: React.FC = () => {
         title="Eliminar Habitación"
         message={`¿Estás seguro de eliminar permanentemente la habitación ${
           deletingRoomTarget ? formatRoomNumber(deletingRoomTarget.roomNumber) : ''
-        } (${deletingRoomTarget?.title})? Esta acción liberará el espacio en el sistema.`}
+        } (${deletingRoomTarget?.title})? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         cancelText="Cancelar"
         variant="brand"
