@@ -2,14 +2,21 @@ import { Platform } from 'react-native';
 
 /**
  * Configuración única y centralizada del Backend de Aura Hotel.
- * - Emulador Android: 10.0.2.2 mapea a localhost de la PC de desarrollo.
- * - Dispositivos físicos / Web / iOS: localhost o la IP de red local (ej: 192.168.18.90).
+ * - 'production': URL desplegada en Render (Nube HTTPS)
+ * - 'local': URL para emulador / desarrollo local
  */
-export const API_BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:3000',
-  ios: 'http://localhost:3000',
-  default: 'http://localhost:3000',
-});
+export const ENVIRONMENTS = {
+  production: 'https://hotelappback.onrender.com',
+  local: Platform.select({
+    android: 'http://10.0.2.2:3000',
+    ios: 'http://localhost:3000',
+    default: 'http://localhost:3000',
+  }),
+};
+
+// URL activa por defecto (cambia entre 'production' o 'local')
+export const CURRENT_ENVIRONMENT: keyof typeof ENVIRONMENTS = 'production';
+export const API_BASE_URL = ENVIRONMENTS[CURRENT_ENVIRONMENT];
 
 export interface HttpResponse<T> {
   success: boolean;
@@ -26,6 +33,13 @@ class HttpClient {
 
   public getBaseUrl(): string {
     return this.baseUrl;
+  }
+
+  /**
+   * Permite cambiar la URL del backend dinámicamente en tiempo de ejecución
+   */
+  public setBaseUrl(newUrl: string): void {
+    this.baseUrl = newUrl.endsWith('/') ? newUrl.slice(0, -1) : newUrl;
   }
 
   /**
