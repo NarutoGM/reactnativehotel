@@ -17,7 +17,14 @@ export default function AppScreen() {
 
   // Si no ha iniciado sesión -> Mostramos la página de Login / Register
   if (!currentUser) {
-    return <LoginPage onAuthSuccess={(user) => setCurrentUser(user)} />;
+    return (
+      <LoginPage
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+          setActiveTab(user.role === 'GUEST' ? 'rooms' : 'adminRooms');
+        }}
+      />
+    );
   }
 
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'RECEPTIONIST';
@@ -53,8 +60,8 @@ export default function AppScreen() {
         )}
       </View>
 
-      {/* Tab Navigation inferior con pestaña de Gestión para Admin */}
-      <BottomNavBar activeTab={activeTab} isAdmin={isAdmin} onTabChange={setActiveTab} />
+      {/* Tab Navigation inferior con roles diferenciados */}
+      <BottomNavBar activeTab={activeTab} role={currentUser.role} onTabChange={setActiveTab} />
     </SafeAreaView>
   );
 }

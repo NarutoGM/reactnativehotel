@@ -7,48 +7,55 @@ export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: MainTabType;
-  isAdmin?: boolean;
+  role?: 'ADMIN' | 'RECEPTIONIST' | 'GUEST';
   onTabChange: (tab: MainTabType) => void;
 }
 
-export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, isAdmin, onTabChange }) => {
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, role = 'GUEST', onTabChange }) => {
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 14);
+  const isGuest = role === 'GUEST';
+  const isAdminOrReception = role === 'ADMIN' || role === 'RECEPTIONIST';
 
   return (
     <View style={[styles.container, { paddingBottom: bottomPadding }]}>
-      <TouchableOpacity
-        style={styles.tabBtn}
-        onPress={() => onTabChange('rooms')}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={activeTab === 'rooms' ? 'bed' : 'bed-outline'}
-          size={22}
-          color={activeTab === 'rooms' ? '#488C8C' : '#94A3B8'}
-        />
-        <Text style={[styles.tabLabel, activeTab === 'rooms' && styles.tabLabelActive]}>
-          Habitaciones
-        </Text>
-      </TouchableOpacity>
+      {/* Pestañas exclusivas para Huésped */}
+      {isGuest && (
+        <>
+          <TouchableOpacity
+            style={styles.tabBtn}
+            onPress={() => onTabChange('rooms')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={activeTab === 'rooms' ? 'bed' : 'bed-outline'}
+              size={22}
+              color={activeTab === 'rooms' ? '#488C8C' : '#94A3B8'}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'rooms' && styles.tabLabelActive]}>
+              Habitaciones
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.tabBtn}
-        onPress={() => onTabChange('bookings')}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={activeTab === 'bookings' ? 'receipt' : 'receipt-outline'}
-          size={22}
-          color={activeTab === 'bookings' ? '#488C8C' : '#94A3B8'}
-        />
-        <Text style={[styles.tabLabel, activeTab === 'bookings' && styles.tabLabelActive]}>
-          Reservas
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabBtn}
+            onPress={() => onTabChange('bookings')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={activeTab === 'bookings' ? 'receipt' : 'receipt-outline'}
+              size={22}
+              color={activeTab === 'bookings' ? '#488C8C' : '#94A3B8'}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'bookings' && styles.tabLabelActive]}>
+              Reservas
+            </Text>
+          </TouchableOpacity>
+        </>
+      )}
 
-      {/* Pestaña de Gestión de Habitaciones para Admin */}
-      {isAdmin && (
+      {/* Pestaña de Gestión para Recepción y Admin */}
+      {isAdminOrReception && (
         <TouchableOpacity
           style={styles.tabBtn}
           onPress={() => onTabChange('adminRooms')}
