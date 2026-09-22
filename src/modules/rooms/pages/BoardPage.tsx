@@ -520,6 +520,7 @@ export const BoardPage: React.FC = () => {
         cellInfo={selectedCellInfo}
         actionLoading={actionLoading}
         onToggleMaintenance={handleToggleMaintenance}
+        onBookingUpdated={loadBoardData}
         onClose={() => setSelectedCellInfo(null)}
       />
 

@@ -237,4 +237,13 @@ export const roomsApi = {
       error: res.error,
     };
   },
+
+  async updateBookingDetails(bookingId: string, payload: { guestName?: string; guestEmail?: string; guestsCount?: number; status?: any }): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+    const res = await httpClient.patch<Booking>(`/rooms/bookings/${bookingId}`, payload);
+    return {
+      success: res.success,
+      booking: res.data,
+      error: res.error,
+    };
+  },
 };
