@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LuxuryButton } from '@/components/LuxuryButton';
 
 interface GuestPickerModalProps {
   visible: boolean;
@@ -126,14 +127,13 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
                 })}
               </View>
 
-              {/* Botón Aplicar */}
-              <TouchableOpacity
-                className="bg-slate-900 rounded-xl py-3 items-center shadow-sm elevation-2"
+              {/* Botón Aplicar (LuxuryButton Variante 1 - Solid) */}
+              <LuxuryButton
+                title="Listo"
+                variant="solid"
                 onPress={onClose}
-                activeOpacity={0.85}
-              >
-                <Text className="text-white text-[13.5px] font-extrabold">Listo</Text>
-              </TouchableOpacity>
+                style={{ marginTop: 6 }}
+              />
             </View>
           </TouchableWithoutFeedback>
         </View>
