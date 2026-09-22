@@ -402,6 +402,10 @@ export const BoardPage: React.FC = () => {
                               ? days.length
                               : startIndex + (booking.nights || 1);
 
+                          const spanDays = Math.max(endIndex - startIndex, 1);
+                          const leftPos = 112 + startIndex * CELL_WIDTH; // 112px = ancho columna habitación (w-28)
+                          const ribbonWidth = spanDays * CELL_WIDTH - 6;
+
                           const theme = getBookingTheme(booking);
 
                           return (
