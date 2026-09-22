@@ -38,7 +38,7 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
   return (
     <>
       {/* MODAL CONFIRMACIÓN DE RESERVA */}
-      <Modal visible={!!selectedRoom} transparent animationType="slide" onRequestClose={onCloseBooking}>
+      <Modal visible={!!selectedRoom} transparent animationType="fade" onRequestClose={onCloseBooking}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedRoom && (

@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
   StyleSheet,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '@/modules/auth/api/auth.api';
@@ -22,12 +23,21 @@ interface BookingsPageProps {
 
 type BookingCategory = 'PENDING' | 'ACTIVE' | 'CANCELLED';
 
+const getVouchers = (voucherFileName?: string | null): string[] => {
+  if (!voucherFileName) return [];
+  return voucherFileName
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+};
+
 export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<BookingCategory>('PENDING');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [detailRoom, setDetailRoom] = useState<Room | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadBookings();
@@ -49,36 +59,39 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         ImagePicker = await import('expo-image-picker');
       } catch (err) {
         Alert.alert(
-          'Módulo de Cámara / Galería',
-          'El módulo nativo se está vinculando. Si estás en emulador, ingresa el link del voucher o reinicia la app con expo run:android.'
+          'Módulo de Galería',
+          'El módulo nativo se está vinculando. Si estás en emulador, reinicia con expo run:android.'
         );
         return;
       }
 
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Permiso Denegado', 'Necesitamos acceso a la galería para seleccionar la captura del voucher.');
+        Alert.alert('Permiso Denegado', 'Necesitamos acceso a la galería para seleccionar la captura del comprobante.');
         return;
       }
 
+      const currentVouchers = getVouchers(booking.voucherFileName);
+      const remainingLimit = Math.max(1, 2 - currentVouchers.length);
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsEditing: true,
+        allowsMultipleSelection: remainingLimit > 1,
+        selectionLimit: remainingLimit,
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets && result.assets[0]?.uri) {
-        const uri = result.assets[0].uri;
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setUploadingId(booking.id);
-        const res = await bookingsApi.uploadVoucher(booking.id, uri);
-        setUploadingId(null);
-
-        if (res.success) {
-          Alert.alert('¡Éxito!', 'La captura del voucher se ha subido correctamente.');
-          loadBookings();
-        } else {
-          Alert.alert('Error al subir', res.error || 'No se pudo subir la imagen.');
+        const assetsToUpload = result.assets.slice(0, remainingLimit);
+        for (const asset of assetsToUpload) {
+          if (asset.uri) {
+            await bookingsApi.uploadVoucher(booking.id, asset.uri);
+          }
         }
+        setUploadingId(null);
+        Alert.alert('¡Éxito!', 'Comprobante(s) subido(s) correctamente.');
+        loadBookings();
       }
     } catch (e: any) {
       setUploadingId(null);
@@ -154,7 +167,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         ) : (
           filteredBookings.map((b) => {
             const isPending = b.status === 'PENDING';
-            const hasVoucher = !!b.voucherFileName;
+            const vouchers = getVouchers(b.voucherFileName);
+            const hasVouchers = vouchers.length > 0;
             const iconColor =
               b.status === 'CONFIRMED' || b.status === 'CHECKED_IN'
                 ? '#16A34A'
@@ -257,33 +271,56 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   </Text>
                 </View>
 
-                {/* Voucher Action: Botón Limpio Variante 3 (Solid) */}
-                {hasVoucher ? (
-                  <View style={styles.voucherUploadedRow}>
-                    <View style={styles.voucherPreviewLeft}>
-                      <Image
-                        source={{ uri: b.voucherFileName! }}
-                        style={styles.voucherThumbnail}
-                        resizeMode="cover"
-                      />
-                      <View>
-                        <Text style={styles.voucherTitle}>Comprobante Adjunto</Text>
-                        <Text style={styles.voucherSub}>✓ Guardado en sistema</Text>
-                      </View>
-                    </View>
+                {/* Voucher Action: Comprobantes sin borde/bg pesado, hasta 2 comprobantes */}
+                {hasVouchers ? (
+                  <View style={styles.voucherContainer}>
+                    <Text style={styles.voucherTitle}>
+                      {vouchers.length === 1 ? 'Comprobante Adjunto' : 'Comprobantes Adjuntos (2/2)'}
+                    </Text>
 
-                    <LuxuryButton
-                      title="Cambiar"
-                      variant="outline"
-                      size="sm"
-                      onPress={() => handlePickAndUploadVoucher(b)}
-                      loading={uploadingId === b.id}
-                    />
+                    <View style={styles.voucherThumbnailsRow}>
+                      {vouchers.map((url, idx) => (
+                        <TouchableOpacity
+                          key={idx}
+                          activeOpacity={0.8}
+                          onPress={() => setPreviewImageUrl(url)}
+                          style={styles.voucherThumbnailWrapper}
+                        >
+                          <Image
+                            source={{ uri: url }}
+                            style={styles.voucherThumbnail}
+                            resizeMode="cover"
+                          />
+                          <View style={styles.voucherBadgeOverlay}>
+                            <Text style={styles.voucherBadgeText}>#{idx + 1}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+
+                      {/* Si solo hay 1 comprobante y sigue pendiente, permitir adjuntar el 2do */}
+                      {vouchers.length < 2 && isPending && (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => handlePickAndUploadVoucher(b)}
+                          disabled={uploadingId === b.id}
+                          style={styles.addSecondVoucherButton}
+                        >
+                          {uploadingId === b.id ? (
+                            <ActivityIndicator size="small" color="#488C8C" />
+                          ) : (
+                            <>
+                              <Ionicons name="add-circle-outline" size={18} color="#488C8C" />
+                              <Text style={styles.addSecondVoucherText}>+ 2do Comprobante</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                 ) : isPending ? (
                   <View style={styles.voucherButtonContainer}>
                     <LuxuryButton
-                      title="Subir Voucher"
+                      title="Subir Comprobante (Hasta 2)"
                       variant="solid"
                       size="md"
                       iconName="cloud-upload-outline"
@@ -305,6 +342,31 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         onClose={() => setDetailRoom(null)}
         showBookButton={false}
       />
+
+      {/* Modal Preview de Imagen de Comprobante en Pantalla Completa */}
+      <Modal
+        visible={!!previewImageUrl}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewImageUrl(null)}
+      >
+        <View style={styles.imagePreviewOverlay}>
+          <TouchableOpacity
+            style={styles.imagePreviewCloseBtn}
+            onPress={() => setPreviewImageUrl(null)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="close" size={26} color="#FFFFFF" />
+          </TouchableOpacity>
+          {previewImageUrl && (
+            <Image
+              source={{ uri: previewImageUrl }}
+              style={styles.imagePreviewFull}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -500,39 +562,88 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   voucherButtonContainer: {
-    marginTop: 4,
-  },
-  voucherUploadedRow: {
-    backgroundColor: '#F8FAFC',
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     marginTop: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  voucherPreviewLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  voucherThumbnail: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: '#E2E8F0',
+  voucherContainer: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderColor: '#F1F5F9',
   },
   voucherTitle: {
     color: '#0F172A',
     fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  voucherThumbnailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  voucherThumbnailWrapper: {
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  voucherThumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+  },
+  voucherBadgeOverlay: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+  },
+  voucherBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  addSecondVoucherButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: 60,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#488C8C',
+    backgroundColor: '#F0FDFA',
+    gap: 6,
+  },
+  addSecondVoucherText: {
+    color: '#488C8C',
+    fontSize: 11,
     fontWeight: '700',
   },
-  voucherSub: {
-    color: '#16A34A',
-    fontSize: 11,
-    fontWeight: '600',
+  imagePreviewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  imagePreviewCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imagePreviewFull: {
+    width: '100%',
+    height: '80%',
   },
 });
