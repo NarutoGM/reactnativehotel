@@ -199,27 +199,27 @@ export const BoardPage: React.FC = () => {
           </View>
         </View>
 
-        {/* Leyenda con los Estados Reales de la BD (Room & BookingStatus) */}
-        <View className="flex-row items-center justify-between mt-2 pt-2 border-t border-slate-100 px-0.5">
+        {/* Leyenda con los Estados Reales de la BD (Room & BookingStatus) en 2 líneas fluidas */}
+        <View className="flex-row flex-wrap items-center gap-x-3.5 gap-y-1 mt-2 pt-2 border-t border-slate-100 px-0.5">
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Disponible</Text>
+            <Text className="text-[10.5px] text-slate-600 font-bold">Disponible</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Mantenimiento</Text>
+            <Text className="text-[10.5px] text-slate-600 font-bold">Mantenimiento</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#0A3B7B]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Confirmada</Text>
+            <Text className="text-[10.5px] text-slate-600 font-bold">Confirmada</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#488C8C]" />
-            <Text className="text-[10px] text-slate-600 font-bold">En Estadía</Text>
+            <Text className="text-[10.5px] text-slate-600 font-bold">En Estadía</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#64748B]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Inactiva</Text>
+            <Text className="text-[10.5px] text-slate-600 font-bold">Inactiva</Text>
           </View>
         </View>
       </View>
