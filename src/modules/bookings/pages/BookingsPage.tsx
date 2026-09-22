@@ -140,6 +140,59 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     }
   };
 
+  const [confirmingBookingId, setConfirmingBookingId] = useState<string | null>(null);
+  const [rejectingBookingId, setRejectingBookingId] = useState<string | null>(null);
+
+  const handleApproveBooking = async (booking: Booking) => {
+    Alert.alert(
+      'Aceptar Reserva',
+      `¿Deseas validar el comprobante y CONFIRMAR la reserva #${booking.bookingId}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar Reserva',
+          style: 'default',
+          onPress: async () => {
+            setConfirmingBookingId(booking.id);
+            const res = await bookingsApi.updateBookingStatus(booking.id, 'CONFIRMED');
+            setConfirmingBookingId(null);
+            if (res.success) {
+              Alert.alert('Reserva Confirmada', `La reserva #${booking.bookingId} ha sido aceptada y confirmada con éxito.`);
+              loadBookings();
+            } else {
+              Alert.alert('Error', res.error || 'No se pudo confirmar la reserva.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRejectBooking = async (booking: Booking) => {
+    Alert.alert(
+      'Rechazar / Cancelar Reserva',
+      `¿Deseas rechazar la reserva #${booking.bookingId}? Esta acción cancelará la reserva y liberará las fechas.`,
+      [
+        { text: 'Volver', style: 'cancel' },
+        {
+          text: 'Rechazar Reserva',
+          style: 'destructive',
+          onPress: async () => {
+            setRejectingBookingId(booking.id);
+            const res = await bookingsApi.updateBookingStatus(booking.id, 'CANCELLED');
+            setRejectingBookingId(null);
+            if (res.success) {
+              Alert.alert('Reserva Cancelada', `La reserva #${booking.bookingId} ha sido cancelada.`);
+              loadBookings();
+            } else {
+              Alert.alert('Error', res.error || 'No se pudo cancelar la reserva.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const filteredBookings = bookings.filter((b) => {
     if (activeCategory === 'PENDING') {
       return b.status === 'PENDING';
@@ -456,8 +509,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                       )}
                     </View>
 
-                    {/* Botón de Enviar definitivo: una vez presionado bloquea la edición */}
-                    {!b.voucherSubmitted && isPending && (
+                    {/* Si es Huésped: Botón de Enviar definitivo */}
+                    {!b.voucherSubmitted && isPending && currentUser.role === 'GUEST' && (
                       <View className="mt-3">
                         <LuxuryButton
                           title="Enviar Comprobante(s)"
@@ -469,18 +522,78 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         />
                       </View>
                     )}
+
+                    {/* Si es Admin o Recepcionista: Botones para Aprobar (Confirmar) o Rechazar */}
+                    {isPending && currentUser.role !== 'GUEST' && (
+                      <View className="mt-3 pt-2.5 border-t border-slate-100 flex-row gap-2">
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => handleRejectBooking(b)}
+                          disabled={rejectingBookingId === b.id || confirmingBookingId === b.id}
+                          className="flex-1 py-2.5 bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row gap-1.5"
+                        >
+                          {rejectingBookingId === b.id ? (
+                            <ActivityIndicator size="small" color="#DC2626" />
+                          ) : (
+                            <>
+                              <Ionicons name="close-circle-outline" size={16} color="#DC2626" />
+                              <Text className="text-[12px] font-extrabold text-red-600">Rechazar</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => handleApproveBooking(b)}
+                          disabled={confirmingBookingId === b.id || rejectingBookingId === b.id}
+                          className="flex-[1.5] py-2.5 bg-[#488C8C] rounded-xl items-center justify-center flex-row gap-1.5 shadow-sm"
+                        >
+                          {confirmingBookingId === b.id ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                          ) : (
+                            <>
+                              <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" />
+                              <Text className="text-[12px] font-black text-white">Aceptar Reserva</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
                 ) : isPending ? (
                   <View className="mt-1.5">
-                    <LuxuryButton
-                      title="Subir Comprobante (Hasta 2)"
-                      variant="solid"
-                      size="md"
-                      iconName="cloud-upload-outline"
-                      style={{ paddingVertical: 11, minHeight: 44, borderRadius: 12 }}
-                      onPress={() => handlePickAndUploadVoucher(b)}
-                      loading={uploadingId === b.id}
-                    />
+                    {currentUser.role === 'GUEST' ? (
+                      <LuxuryButton
+                        title="Subir Comprobante (Hasta 2)"
+                        variant="solid"
+                        size="md"
+                        iconName="cloud-upload-outline"
+                        style={{ paddingVertical: 11, minHeight: 44, borderRadius: 12 }}
+                        onPress={() => handlePickAndUploadVoucher(b)}
+                        loading={uploadingId === b.id}
+                      />
+                    ) : (
+                      <View className="pt-2 flex-row gap-2">
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => handleRejectBooking(b)}
+                          disabled={rejectingBookingId === b.id}
+                          className="flex-1 py-2.5 bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row gap-1"
+                        >
+                          <Ionicons name="close-circle-outline" size={15} color="#DC2626" />
+                          <Text className="text-[11.5px] font-bold text-red-600">Cancelar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => handleApproveBooking(b)}
+                          disabled={confirmingBookingId === b.id}
+                          className="flex-[1.3] py-2.5 bg-[#488C8C] rounded-xl items-center justify-center flex-row gap-1"
+                        >
+                          <Ionicons name="checkmark-circle-outline" size={15} color="#FFFFFF" />
+                          <Text className="text-[11.5px] font-bold text-white">Confirmar Manual</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
                 ) : null}
               </View>
