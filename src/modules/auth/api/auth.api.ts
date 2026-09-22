@@ -63,7 +63,18 @@ export const authApi = {
   },
 
   async uploadAvatar(userId: string, fileUri: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    const res = await httpClient.upload<User>(`/auth/profile/${userId}/avatar`, fileUri);
+    const filename = fileUri.split('/').pop() || `avatar_${Date.now()}.jpg`;
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: fileUri,
+      name: filename,
+      type,
+    } as any);
+
+    const res = await httpClient.postFormData<User>(`/auth/profile/${userId}/avatar`, formData);
     return {
       success: res.success,
       user: res.data,
