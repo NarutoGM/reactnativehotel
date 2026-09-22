@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@/modules/auth/api/auth.api';
+import { sessionManager } from '@/modules/auth/services/sessionManager';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ProfilePage } from '@/modules/auth/pages/ProfilePage';
 import { RoomsPage } from '@/modules/rooms/pages/RoomsPage';
@@ -14,18 +15,53 @@ import { UserMenuHeader } from '@/components/UserMenuHeader';
 
 export default function AppScreen() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
   const [activeTab, setActiveTab] = useState<MainTabType>('rooms');
+
+  // Restaurar sesión al abrir la app o recargar
+  useEffect(() => {
+    const restoreUser = async () => {
+      try {
+        const savedUser = await sessionManager.getUser();
+        if (savedUser) {
+          setCurrentUser(savedUser);
+          setActiveTab(savedUser.role === 'GUEST' ? 'rooms' : 'adminRooms');
+        }
+      } finally {
+        setIsRestoringSession(false);
+      }
+    };
+    restoreUser();
+  }, []);
+
+  const handleAuthSuccess = async (user: User) => {
+    await sessionManager.saveUser(user);
+    setCurrentUser(user);
+    setActiveTab(user.role === 'GUEST' ? 'rooms' : 'adminRooms');
+  };
+
+  const handleLogout = async () => {
+    await sessionManager.clearUser();
+    setCurrentUser(null);
+  };
+
+  const handleUpdateUser = async (updated: User) => {
+    await sessionManager.saveUser(updated);
+    setCurrentUser(updated);
+  };
+
+  // Pantalla de carga mientras se restaura la sesión persistida
+  if (isRestoringSession) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#488C8C" />
+      </View>
+    );
+  }
 
   // Si no ha iniciado sesión -> Mostramos la página de Login / Register
   if (!currentUser) {
-    return (
-      <LoginPage
-        onAuthSuccess={(user) => {
-          setCurrentUser(user);
-          setActiveTab(user.role === 'GUEST' ? 'rooms' : 'adminRooms');
-        }}
-      />
-    );
+    return <LoginPage onAuthSuccess={handleAuthSuccess} />;
   }
 
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'RECEPTIONIST';
@@ -38,7 +74,7 @@ export default function AppScreen() {
       {/* Top Header con Avatar de Iniciales y Tooltip interactivo - FIJO EN LA PARTE SUPERIOR */}
       <UserMenuHeader
         currentUser={currentUser}
-        onLogout={() => setCurrentUser(null)}
+        onLogout={handleLogout}
         onOpenProfile={() => setActiveTab('profile')}
       />
 
@@ -56,8 +92,8 @@ export default function AppScreen() {
         {activeTab === 'profile' && (
           <ProfilePage
             currentUser={currentUser}
-            onUpdateUser={(updated) => setCurrentUser(updated)}
-            onLogout={() => setCurrentUser(null)}
+            onUpdateUser={handleUpdateUser}
+            onLogout={handleLogout}
           />
         )}
       </View>
