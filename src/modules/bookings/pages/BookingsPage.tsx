@@ -325,15 +325,12 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                           activeOpacity={0.7}
                           onPress={() => handlePickAndUploadVoucher(b)}
                           disabled={uploadingId === b.id}
-                          className="flex-row items-center px-3 h-15 rounded-xl border border-dashed border-[#488C8C] bg-[#F0FDFA] gap-1.5"
+                          className="w-15 h-15 rounded-xl border border-dashed border-[#488C8C] bg-[#F0FDFA] justify-center items-center"
                         >
                           {uploadingId === b.id ? (
                             <ActivityIndicator size="small" color="#488C8C" />
                           ) : (
-                            <>
-                              <Ionicons name="add-circle-outline" size={18} color="#488C8C" />
-                              <Text className="text-[#488C8C] text-[11px] font-bold">+ 2do Comprobante</Text>
-                            </>
+                            <Ionicons name="add" size={24} color="#488C8C" />
                           )}
                         </TouchableOpacity>
                       )}
