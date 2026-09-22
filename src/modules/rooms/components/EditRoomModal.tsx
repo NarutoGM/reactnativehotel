@@ -2,18 +2,16 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Modal,
   ScrollView,
-  ActivityIndicator,
   Alert,
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { Room, roomsApi, CreateRoomPayload, UpdateRoomPayload } from '../api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 
 interface EditRoomModalProps {
   visible: boolean;
@@ -179,29 +177,30 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-slate-900/60 justify-end">
-        <View className="bg-white rounded-t-3xl max-h-[90%] overflow-hidden border-t border-slate-200">
-          <View className="flex-row justify-between items-center p-4 border-b border-slate-100">
+        <View className="bg-white rounded-t-3xl max-h-[92%] overflow-hidden border-t border-slate-200">
+          {/* Header del Modal */}
+          <View className="flex-row justify-between items-center px-6 py-4 border-b border-slate-100">
             <View>
-              <Text className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+              <Text className="text-[11px] text-teal-700 font-bold uppercase tracking-wider">
                 Panel Administrativo
               </Text>
-              <Text className="text-[18px] font-black text-slate-900">
+              <Text className="text-[19px] font-black text-slate-900">
                 {isEditing ? `Editar Habitación ${room?.roomNumber}` : 'Nueva Habitación'}
               </Text>
             </View>
 
             <TouchableOpacity
-              className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
+              className="w-9 h-9 rounded-full bg-slate-100 justify-center items-center active:bg-slate-200"
               onPress={onClose}
             >
-              <Ionicons name="close" size={18} color="#64748B" />
+              <Ionicons name="close" size={20} color="#475569" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView className="p-5" showsVerticalScrollIndicator={false}>
-            <View className="space-y-3 pb-8">
+          <ScrollView className="px-5 pt-3" showsVerticalScrollIndicator={false}>
+            <View className="space-y-2 pb-8">
               {/* SUBIDA DE ARCHIVO DE IMAGEN A FIREBASE */}
-              <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 items-center">
+              <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 items-center mb-2">
                 {previewImage ? (
                   <View className="w-full relative mb-3">
                     <Image
@@ -210,7 +209,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                       resizeMode="cover"
                     />
                     {selectedFileUri && (
-                      <View className="absolute top-2 left-2 bg-emerald-600 px-2.5 py-0.5 rounded-full">
+                      <View className="absolute top-2 left-2 bg-[#488C8C] px-2.5 py-0.5 rounded-full">
                         <Text className="text-white text-[10px] font-bold">Nuevo Archivo Listo</Text>
                       </View>
                     )}
@@ -223,7 +222,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                 )}
 
                 <TouchableOpacity
-                  className="bg-slate-900 py-2.5 px-4 rounded-xl flex-row items-center gap-2 active:bg-slate-800 shadow-sm"
+                  className="bg-[#488C8C] py-2.5 px-4 rounded-xl flex-row items-center gap-2 active:opacity-90 shadow-sm"
                   onPress={handlePickImage}
                 >
                   <Ionicons name="cloud-upload-outline" size={16} color="#FFFFFF" />
@@ -234,24 +233,20 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               </View>
 
               {/* Número y Título */}
-              <View className="flex-row gap-3 mt-1">
-                <View className="w-1/3">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">N° Habitación *</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px]"
-                    placeholder="Ej: 301"
-                    placeholderTextColor="#94A3B8"
+              <View className="flex-row gap-2.5">
+                <View className="w-[38%]">
+                  <FloatingLabelInput
+                    label="N° Habitación *"
+                    iconName="key-outline"
                     value={roomNumber}
                     onChangeText={setRoomNumber}
                   />
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Nombre / Título *</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px]"
-                    placeholder="Ej: Suite Deluxe Marina"
-                    placeholderTextColor="#94A3B8"
+                  <FloatingLabelInput
+                    label="Nombre / Título *"
+                    iconName="bookmark-outline"
                     value={title}
                     onChangeText={setTitle}
                   />
@@ -259,25 +254,21 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               </View>
 
               {/* Tipo y Piso */}
-              <View className="flex-row gap-3 mt-2">
+              <View className="flex-row gap-2.5">
                 <View className="flex-1">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Tipo</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px]"
-                    placeholder="Ej: Suite / Doble"
-                    placeholderTextColor="#94A3B8"
+                  <FloatingLabelInput
+                    label="Tipo"
+                    iconName="bed-outline"
                     value={type}
                     onChangeText={setType}
                   />
                 </View>
 
-                <View className="w-1/3">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Piso</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px] text-center"
-                    placeholder="1"
+                <View className="w-[35%]">
+                  <FloatingLabelInput
+                    label="Piso"
+                    iconName="layers-outline"
                     keyboardType="numeric"
-                    placeholderTextColor="#94A3B8"
                     value={floor}
                     onChangeText={setFloor}
                   />
@@ -285,26 +276,22 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               </View>
 
               {/* Capacidad y Precio */}
-              <View className="flex-row gap-3 mt-2">
+              <View className="flex-row gap-2.5">
                 <View className="flex-1">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Capacidad (Personas)</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px] text-center"
-                    placeholder="2"
+                  <FloatingLabelInput
+                    label="Capacidad (Pers.)"
+                    iconName="people-outline"
                     keyboardType="numeric"
-                    placeholderTextColor="#94A3B8"
                     value={capacity}
                     onChangeText={setCapacity}
                   />
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Precio por Noche (S/) *</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px] text-center"
-                    placeholder="250"
+                  <FloatingLabelInput
+                    label="Precio / Noche (S/) *"
+                    iconName="pricetag-outline"
                     keyboardType="numeric"
-                    placeholderTextColor="#94A3B8"
                     value={pricePerNight}
                     onChangeText={setPricePerNight}
                   />
@@ -312,25 +299,21 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               </View>
 
               {/* Camas y Área */}
-              <View className="flex-row gap-3 mt-2">
+              <View className="flex-row gap-2.5">
                 <View className="flex-1">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Distribución de Camas</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px]"
-                    placeholder="Ej: 1 Cama King + 1 Twin"
-                    placeholderTextColor="#94A3B8"
+                  <FloatingLabelInput
+                    label="Distribución Camas"
+                    iconName="bed-outline"
                     value={bedType}
                     onChangeText={setBedType}
                   />
                 </View>
 
-                <View className="w-1/3">
-                  <Text className="text-slate-700 text-[12px] font-bold mb-1">Área (m²)</Text>
-                  <TextInput
-                    className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 text-[14px] text-center"
-                    placeholder="30"
+                <View className="w-[35%]">
+                  <FloatingLabelInput
+                    label="Área (m²)"
+                    iconName="expand-outline"
                     keyboardType="numeric"
-                    placeholderTextColor="#94A3B8"
                     value={surfaceAreaM2}
                     onChangeText={setSurfaceAreaM2}
                   />
@@ -338,7 +321,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               </View>
 
               {/* Botones Guardar / Cancelar con LuxuryButton */}
-              <View className="flex-row gap-3 mt-6">
+              <View className="flex-row gap-3 pt-4">
                 <View className="flex-1">
                   <LuxuryButton
                     title="Cancelar"

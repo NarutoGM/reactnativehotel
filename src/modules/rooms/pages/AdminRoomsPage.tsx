@@ -170,9 +170,7 @@ export const AdminRoomsPage: React.FC = () => {
 
               return (
                 <View
-                  className={`bg-white rounded-2xl p-4 mb-3 border shadow-sm ${
-                    item.isAvailable ? 'border-slate-200' : 'border-amber-200 bg-amber-50/20'
-                  }`}
+                  className="bg-white rounded-2xl p-4 mb-3 border border-slate-200 shadow-sm"
                 >
                   {/* Header Row */}
                   <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-100">
@@ -235,11 +233,11 @@ export const AdminRoomsPage: React.FC = () => {
                       />
                     </View>
 
-                    {/* Edit Button */}
+                    {/* Edit Button (Variante 1 - Solid) */}
                     <View className="flex-1">
                       <LuxuryButton
                         title="Editar"
-                        variant="outline"
+                        variant="solid"
                         size="sm"
                         iconName="create-outline"
                         onPress={() => {
