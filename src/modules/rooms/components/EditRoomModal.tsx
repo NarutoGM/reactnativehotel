@@ -11,7 +11,9 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Room, roomsApi, CreateRoomPayload, UpdateRoomPayload } from '../api/rooms.api';
+import { LuxuryButton } from '@/components/LuxuryButton';
 
 interface EditRoomModalProps {
   visible: boolean;
@@ -335,29 +337,27 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                 </View>
               </View>
 
-              {/* Botón Guardar */}
-              <View className="flex-row gap-3 mt-5">
-                <TouchableOpacity
-                  className="flex-1 bg-slate-100 border border-slate-300 py-3 rounded-xl items-center"
-                  onPress={onClose}
-                  disabled={loading}
-                >
-                  <Text className="text-slate-700 font-bold text-[14px]">Cancelar</Text>
-                </TouchableOpacity>
+              {/* Botones Guardar / Cancelar con LuxuryButton */}
+              <View className="flex-row gap-3 mt-6">
+                <View className="flex-1">
+                  <LuxuryButton
+                    title="Cancelar"
+                    variant="outline"
+                    onPress={onClose}
+                    disabled={loading}
+                    style={{ width: '100%', marginTop: 0 }}
+                  />
+                </View>
 
-                <TouchableOpacity
-                  className="flex-2 bg-slate-900 py-3 rounded-xl items-center shadow-md active:bg-slate-800"
-                  onPress={handleSave}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text className="text-white font-bold text-[14px]">
-                      {isEditing ? 'Guardar Cambios' : 'Crear Habitación'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                <View className="flex-[1.4]">
+                  <LuxuryButton
+                    title={isEditing ? 'Guardar Cambios' : 'Crear Habitación'}
+                    variant="solid"
+                    loading={loading}
+                    onPress={handleSave}
+                    style={{ width: '100%', marginTop: 0 }}
+                  />
+                </View>
               </View>
             </View>
           </ScrollView>

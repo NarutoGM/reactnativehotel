@@ -11,12 +11,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Room, roomsApi, formatRoomNumber } from '../api/rooms.api';
 import { EditRoomModal } from '../components/EditRoomModal';
+import { LuxuryButton } from '@/components/LuxuryButton';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 export const AdminRoomsPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingRoomTarget, setDeletingRoomTarget] = useState<Room | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Modal para Crear / Editar
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -47,7 +50,20 @@ export const AdminRoomsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = (room: Room) => {
+  const handleConfirmDelete = async () => {
+    if (!deletingRoomTarget) return;
+    setDeleting(true);
+    const res = await roomsApi.deleteRoom(deletingRoomTarget.id);
+    setDeleting(false);
+    setDeletingRoomTarget(null);
+    if (res.success) {
+      loadAllRooms();
+    } else {
+      Alert.alert('No se pudo eliminar', res.error || 'Error al eliminar la habitación.');
+    }
+  };
+
+  const handleDeletePress = (room: Room) => {
     if (room.isAvailable) {
       Alert.alert(
         'Habitación Activa',
@@ -55,29 +71,7 @@ export const AdminRoomsPage: React.FC = () => {
       );
       return;
     }
-
-    Alert.alert(
-      'Eliminar Habitación',
-      `¿Estás seguro de eliminar permanentemente la habitación ${formatRoomNumber(room.roomNumber)} (${room.title})? Esta acción no se puede deshacer.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            setDeletingId(room.id);
-            const res = await roomsApi.deleteRoom(room.id);
-            setDeletingId(null);
-            if (res.success) {
-              Alert.alert('Eliminada', 'La habitación ha sido eliminada del sistema.');
-              loadAllRooms();
-            } else {
-              Alert.alert('No se pudo eliminar', res.error || 'Error al eliminar la habitación.');
-            }
-          },
-        },
-      ]
-    );
+    setDeletingRoomTarget(room);
   };
 
   return (
@@ -93,23 +87,24 @@ export const AdminRoomsPage: React.FC = () => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          className="flex-row items-center bg-slate-900 px-3.5 py-2.5 rounded-xl active:bg-slate-800 shadow-sm"
+        <LuxuryButton
+          title="Nueva"
+          variant="solid"
+          size="sm"
+          iconName="add"
           onPress={() => {
             setSelectedRoomToEdit(null);
             setEditModalVisible(true);
           }}
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" style={{ marginRight: 4 }} />
-          <Text className="text-white font-bold text-[13px]">Nueva</Text>
-        </TouchableOpacity>
+          style={{ minWidth: 90 }}
+        />
       </View>
 
       {/* Lista de Habitaciones para Admin */}
       <View className="flex-1 px-3.5 pt-3">
         {loading ? (
           <View className="py-20 justify-center items-center">
-            <ActivityIndicator size="large" color="#0F172A" />
+            <ActivityIndicator size="large" color="#488C8C" />
             <Text className="text-slate-500 mt-2 text-[13px] font-medium">Cargando habitaciones...</Text>
           </View>
         ) : rooms.length === 0 ? (
@@ -134,7 +129,6 @@ export const AdminRoomsPage: React.FC = () => {
                 : 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80';
 
               const isToggling = togglingId === item.id;
-              const isDeleting = deletingId === item.id;
 
               return (
                 <View
@@ -143,16 +137,18 @@ export const AdminRoomsPage: React.FC = () => {
                   }`}
                 >
                   {/* Header Row */}
-                  <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
-                    <View className="flex-row items-center gap-2">
+                  <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-100">
+                    <View className="flex-row items-center gap-2.5 flex-1 pr-2">
                       <Image
                         source={{ uri: item.imageUrl || defaultImage }}
-                        className="w-12 h-12 rounded-xl bg-slate-200"
+                        className="w-13 h-13 rounded-xl bg-slate-200"
                         resizeMode="cover"
                       />
-                      <View>
-                        <Text className="text-slate-900 font-black text-[15px]">{item.title}</Text>
-                        <Text className="text-slate-500 text-[11px] font-bold">
+                      <View className="flex-1">
+                        <Text className="text-slate-900 font-black text-[15px]" numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        <Text className="text-slate-500 text-[11px] font-bold mt-0.5">
                           Hab. {formatRoomNumber(item.roomNumber)} · Piso {item.floor} · {item.capacity} pers.
                         </Text>
                       </View>
@@ -160,14 +156,14 @@ export const AdminRoomsPage: React.FC = () => {
 
                     {/* Status Badge */}
                     <View
-                      className={`px-2.5 py-0.5 rounded-full border ${
+                      className={`px-2.5 py-1 rounded-full ${
                         item.isAvailable
-                          ? 'bg-emerald-50 border-emerald-200'
-                          : 'bg-red-50 border-red-200'
+                          ? 'bg-emerald-100'
+                          : 'bg-red-100'
                       }`}
                     >
                       <Text
-                        className={`text-[10px] font-black ${
+                        className={`text-[10px] font-black tracking-wide ${
                           item.isAvailable ? 'text-emerald-700' : 'text-red-700'
                         }`}
                       >
@@ -178,86 +174,60 @@ export const AdminRoomsPage: React.FC = () => {
 
                   {/* Pricing & Bed Info */}
                   <View className="flex-row justify-between items-center py-2.5">
-                    <Text className="text-slate-600 text-[12px] font-medium">
+                    <Text className="text-slate-600 text-[12px] font-semibold">
                       {item.bedType} · {item.surfaceAreaM2} m²
                     </Text>
                     <Text className="text-slate-900 font-black text-[16px]">
-                      S/ {item.pricePerNight} <Text className="text-[11px] text-slate-500 font-normal">/noche</Text>
+                      S/ {item.pricePerNight} <Text className="text-[11px] text-slate-400 font-normal">/noche</Text>
                     </Text>
                   </View>
 
-                  {/* Actions Row */}
-                  <View className="flex-row justify-between items-center pt-2.5 border-t border-slate-100 gap-2">
+                  {/* Actions Row with Luxury Buttons */}
+                  <View className="flex-row items-center pt-2.5 border-t border-slate-100 gap-2">
                     {/* Toggle Button */}
-                    <TouchableOpacity
-                      className={`flex-1 py-2 px-2.5 rounded-xl border flex-row justify-center items-center gap-1.5 ${
-                        item.isAvailable
-                          ? 'bg-amber-50 border-amber-300 active:bg-amber-100'
-                          : 'bg-emerald-50 border-emerald-300 active:bg-emerald-100'
-                      }`}
-                      onPress={() => handleToggle(item)}
-                      disabled={isToggling}
-                    >
-                      {isToggling ? (
-                        <ActivityIndicator size="small" color="#475569" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name={item.isAvailable ? 'pause-circle-outline' : 'play-circle-outline'}
-                            size={16}
-                            color={item.isAvailable ? '#D97706' : '#16A34A'}
-                          />
-                          <Text
-                            className={`text-[12px] font-bold ${
-                              item.isAvailable ? 'text-amber-800' : 'text-emerald-800'
-                            }`}
-                          >
-                            {item.isAvailable ? 'Desactivar' : 'Activar'}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
+                    <View className="flex-[1.2]">
+                      <LuxuryButton
+                        title={item.isAvailable ? 'Desactivar' : 'Activar'}
+                        variant={item.isAvailable ? 'outline' : 'solid'}
+                        size="sm"
+                        iconName={item.isAvailable ? 'pause-circle-outline' : 'play-circle-outline'}
+                        loading={isToggling}
+                        onPress={() => handleToggle(item)}
+                        style={{ width: '100%', marginTop: 0 }}
+                      />
+                    </View>
 
                     {/* Edit Button */}
-                    <TouchableOpacity
-                      className="bg-slate-100 border border-slate-300 py-2 px-3.5 rounded-xl flex-row justify-center items-center gap-1 active:bg-slate-200"
-                      onPress={() => {
-                        setSelectedRoomToEdit(item);
-                        setEditModalVisible(true);
-                      }}
-                    >
-                      <Ionicons name="create-outline" size={15} color="#334155" />
-                      <Text className="text-slate-800 text-[12px] font-bold">Editar</Text>
-                    </TouchableOpacity>
+                    <View className="flex-1">
+                      <LuxuryButton
+                        title="Editar"
+                        variant="outline"
+                        size="sm"
+                        iconName="create-outline"
+                        onPress={() => {
+                          setSelectedRoomToEdit(item);
+                          setEditModalVisible(true);
+                        }}
+                        style={{ width: '100%', marginTop: 0 }}
+                      />
+                    </View>
 
-                    {/* Delete Button (Solo habilitado si está desactivada) */}
+                    {/* Delete Button (Solo si está desactivada) */}
                     <TouchableOpacity
-                      className={`py-2 px-3.5 rounded-xl flex-row justify-center items-center gap-1 border ${
+                      className={`h-[38px] px-3 rounded-xl justify-center items-center flex-row gap-1 border ${
                         !item.isAvailable
                           ? 'bg-red-50 border-red-200 active:bg-red-100'
-                          : 'bg-slate-50 border-slate-200 opacity-40'
+                          : 'bg-slate-50 border-slate-200 opacity-35'
                       }`}
-                      onPress={() => handleDelete(item)}
-                      disabled={item.isAvailable || isDeleting}
+                      onPress={() => handleDeletePress(item)}
+                      disabled={item.isAvailable}
+                      activeOpacity={0.7}
                     >
-                      {isDeleting ? (
-                        <ActivityIndicator size="small" color="#DC2626" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="trash-outline"
-                            size={15}
-                            color={!item.isAvailable ? '#DC2626' : '#94A3B8'}
-                          />
-                          <Text
-                            className={`text-[12px] font-bold ${
-                              !item.isAvailable ? 'text-red-600' : 'text-slate-400'
-                            }`}
-                          >
-                            Eliminar
-                          </Text>
-                        </>
-                      )}
+                      <Ionicons
+                        name="trash-outline"
+                        size={15}
+                        color={!item.isAvailable ? '#DC2626' : '#94A3B8'}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -273,6 +243,22 @@ export const AdminRoomsPage: React.FC = () => {
         room={selectedRoomToEdit}
         onClose={() => setEditModalVisible(false)}
         onSuccess={() => loadAllRooms()}
+      />
+
+      {/* Modal Personalizado de Confirmación para Eliminar Habitación */}
+      <ConfirmModal
+        visible={!!deletingRoomTarget}
+        title="Eliminar Habitación"
+        message={`¿Estás seguro de eliminar permanentemente la habitación ${
+          deletingRoomTarget ? formatRoomNumber(deletingRoomTarget.roomNumber) : ''
+        } (${deletingRoomTarget?.title})? Esta acción liberará el espacio en el sistema.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="brand"
+        iconName="trash-outline"
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingRoomTarget(null)}
       />
     </View>
   );
