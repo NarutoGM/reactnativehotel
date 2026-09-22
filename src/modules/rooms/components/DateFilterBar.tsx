@@ -31,7 +31,15 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const [calendarTarget, setCalendarTarget] = useState<'checkIn' | 'checkOut' | null>(null);
   const [guestModalVisible, setGuestModalVisible] = useState(false);
 
-  const todayStr = '2026-09-20';
+  const getTodayStr = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const todayStr = getTodayStr();
 
   const formatShortDate = (dateStr: string) => {
     if (!dateStr) return '';

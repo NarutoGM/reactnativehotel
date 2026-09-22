@@ -56,13 +56,30 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const getRemainingTime = (createdAtStr: string) => {
-    const createdTime = new Date(createdAtStr).getTime();
+  const getRemainingTime = (createdAtStr?: string) => {
+    if (!createdAtStr) {
+      return { expired: false, text: '15:00', totalSeconds: 900 };
+    }
+
+    // Normalizar timestamp: soportar formato ISO UTC (agregando Z si falta) o milisegundos
+    let createdTime = new Date(createdAtStr).getTime();
+    if (isNaN(createdTime)) {
+      const normalizedStr = createdAtStr.endsWith('Z') ? createdAtStr : `${createdAtStr}Z`;
+      createdTime = new Date(normalizedStr).getTime();
+    }
+
+    // Si aún no es válido, no marcar como expirado
+    if (isNaN(createdTime)) {
+      return { expired: false, text: '15:00', totalSeconds: 900 };
+    }
+
     const expiryTime = createdTime + 15 * 60 * 1000;
     const diffMs = expiryTime - now;
+
     if (diffMs <= 0) {
       return { expired: true, text: '00:00', totalSeconds: 0 };
     }
+
     const totalSeconds = Math.floor(diffMs / 1000);
     const m = Math.floor(totalSeconds / 60);
     const s = totalSeconds % 60;

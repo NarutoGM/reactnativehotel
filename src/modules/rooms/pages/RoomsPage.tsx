@@ -23,11 +23,21 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
   currentUser,
   onNavigateToBookings,
 }) => {
+  const getTodayPeruStr = (offsetDays = 0) => {
+    const now = new Date();
+    // Ajustar a zona horaria de Perú si es necesario (o usar fecha local del dispositivo)
+    const target = new Date(now.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+    const y = target.getFullYear();
+    const m = String(target.getMonth() + 1).padStart(2, '0');
+    const d = String(target.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [capacity, setCapacity] = useState('2');
-  const [checkIn, setCheckIn] = useState('2026-09-20');
-  const [checkOut, setCheckOut] = useState('2026-09-23');
+  const [checkIn, setCheckIn] = useState(getTodayPeruStr(0));
+  const [checkOut, setCheckOut] = useState(getTodayPeruStr(3));
 
   const [detailRoom, setDetailRoom] = useState<Room | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);

@@ -22,13 +22,24 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
   visible,
   title,
   selectedDate,
-  minDate = '2026-09-20',
+  minDate,
   onSelect,
   onClose,
 }) => {
+  const getTodayISO = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const effectiveMinDate = minDate || getTodayISO();
   const initialDate = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
-  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear() || 2026);
-  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() || 8); // 0-indexed
+  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear() || new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(
+    isNaN(initialDate.getMonth()) ? new Date().getMonth() : initialDate.getMonth()
+  ); // 0-indexed
 
   if (!visible) return null;
 
@@ -126,7 +137,7 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
                   }
 
                   const isSelected = item.dateStr === selectedDate;
-                  const isPast = minDate ? item.dateStr < minDate : false;
+                  const isPast = effectiveMinDate ? item.dateStr < effectiveMinDate : false;
 
                   return (
                     <TouchableOpacity
