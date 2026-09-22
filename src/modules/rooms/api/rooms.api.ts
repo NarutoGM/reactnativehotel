@@ -9,6 +9,7 @@ export interface Room {
   capacity: number;
   pricePerNight: number;
   isAvailable: boolean;
+  isUnderMaintenance?: boolean;
   bedType: string;
   surfaceAreaM2: number;
   rating?: number;
@@ -66,6 +67,7 @@ export interface CreateRoomPayload {
   capacity: number;
   pricePerNight: number;
   isAvailable?: boolean;
+  isUnderMaintenance?: boolean;
   bedType?: string;
   surfaceAreaM2?: number;
   imageUrl?: string;
@@ -79,6 +81,7 @@ export interface UpdateRoomPayload {
   capacity?: number;
   pricePerNight?: number;
   isAvailable?: boolean;
+  isUnderMaintenance?: boolean;
   bedType?: string;
   surfaceAreaM2?: number;
   imageUrl?: string;
@@ -128,6 +131,15 @@ export const roomsApi = {
 
   async toggleRoomAvailability(id: string, isAvailable?: boolean): Promise<{ success: boolean; room?: Room; error?: string }> {
     const res = await httpClient.patch<Room>(`/rooms/${id}/toggle`, isAvailable !== undefined ? { isAvailable } : {});
+    return {
+      success: res.success,
+      room: res.data,
+      error: res.error,
+    };
+  },
+
+  async toggleRoomMaintenance(id: string, isUnderMaintenance?: boolean): Promise<{ success: boolean; room?: Room; error?: string }> {
+    const res = await httpClient.patch<Room>(`/rooms/${id}/maintenance`, isUnderMaintenance !== undefined ? { isUnderMaintenance } : {});
     return {
       success: res.success,
       room: res.data,
