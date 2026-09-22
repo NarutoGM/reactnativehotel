@@ -56,7 +56,7 @@ export interface BookingPayload {
   checkOutDate: string;
   guestsCount: number;
   totalAmount: number;
-  status?: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN';
+  status?: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CANCELLED';
 }
 
 export interface CreateRoomPayload {

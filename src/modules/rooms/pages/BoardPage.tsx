@@ -38,7 +38,7 @@ export const BoardPage: React.FC = () => {
   const [manualGuestsCount, setManualGuestsCount] = useState('2');
   const [manualNights, setManualNights] = useState('1');
   const [manualTotalAmount, setManualTotalAmount] = useState('0');
-  const [manualStatus, setManualStatus] = useState<'CONFIRMED' | 'CHECKED_IN' | 'PENDING'>('CONFIRMED');
+  const [manualStatus, setManualStatus] = useState<'CONFIRMED' | 'CHECKED_IN' | 'PENDING' | 'CANCELLED'>('CONFIRMED');
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [creatingManualBooking, setCreatingManualBooking] = useState(false);
 
@@ -892,7 +892,9 @@ export const BoardPage: React.FC = () => {
                               ? '#0A3B7B'
                               : manualStatus === 'CHECKED_IN'
                                 ? '#488C8C'
-                                : '#F59E0B',
+                                : manualStatus === 'PENDING'
+                                  ? '#F59E0B'
+                                  : '#EF4444',
                         }}
                       />
                       <Text className="text-[13.5px] font-bold text-slate-800">
@@ -900,7 +902,9 @@ export const BoardPage: React.FC = () => {
                           ? 'Confirmada'
                           : manualStatus === 'CHECKED_IN'
                             ? 'En Estadía (Check-In)'
-                            : 'Pendiente de Pago'}
+                            : manualStatus === 'PENDING'
+                              ? 'Pendiente de Pago'
+                              : 'Cancelada'}
                       </Text>
                     </View>
                     <Ionicons name="chevron-down" size={18} color="#64748B" />
@@ -1046,6 +1050,15 @@ export const BoardPage: React.FC = () => {
                   bg: '#FFFBEB',
                   border: '#FDE68A',
                   icon: 'time',
+                },
+                {
+                  value: 'CANCELLED' as const,
+                  label: 'Cancelada',
+                  desc: 'Reserva anulada o descartada',
+                  color: '#EF4444',
+                  bg: '#FEF2F2',
+                  border: '#FECACA',
+                  icon: 'close-circle',
                 },
               ].map((opt) => {
                 const isSelected = manualStatus === opt.value;
