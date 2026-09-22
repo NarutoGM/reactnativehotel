@@ -123,15 +123,48 @@ export const BoardPage: React.FC = () => {
       return;
     }
 
-    setCreatingManualBooking(true);
+    const guests = parseInt(manualGuestsCount, 10) || 1;
+    const maxCapacity = targetRoomForBooking.capacity || 2;
+    if (guests < 1) {
+      Alert.alert('Cantidad Inválida', 'Debe haber al menos 1 huésped.');
+      return;
+    }
+    if (guests > maxCapacity) {
+      Alert.alert(
+        'Capacidad Excedida',
+        `Esta habitación admite un máximo de ${maxCapacity} personas.`
+      );
+      return;
+    }
 
+    // 1. Comprobación de disponibilidad previa en tiempo real
+    setCreatingManualBooking(true);
+    
+    // Verificar si en los datos actuales del calendario hay conflicto de solapamiento
+    const hasOverlap = targetRoomForBooking.bookings?.some((b) => {
+      if (['CONFIRMED', 'PENDING', 'CHECKED_IN'].includes(b.status)) {
+        return manualCheckIn < b.checkOutDate && manualCheckOut > b.checkInDate;
+      }
+      return false;
+    });
+
+    if (hasOverlap || !targetRoomForBooking.isAvailable || targetRoomForBooking.isUnderMaintenance) {
+      setCreatingManualBooking(false);
+      Alert.alert(
+        'Habitación No Disponible',
+        'La habitación no está disponible para las fechas seleccionadas o se encuentra en mantenimiento.'
+      );
+      return;
+    }
+
+    // 2. Registrar la reserva
     const payload: BookingPayload = {
       roomId: targetRoomForBooking.id,
       guestName: manualGuestName.trim(),
       guestEmail: manualGuestEmail.trim() || `${manualGuestName.toLowerCase().replace(/\s+/g, '')}@presencial.aura`,
       checkInDate: manualCheckIn,
       checkOutDate: manualCheckOut,
-      guestsCount: parseInt(manualGuestsCount, 10) || 2,
+      guestsCount: guests,
       totalAmount: parseFloat(manualTotalAmount) || targetRoomForBooking.pricePerNight,
       status: manualStatus,
     };
@@ -307,7 +340,7 @@ export const BoardPage: React.FC = () => {
           <ScrollView horizontal showsHorizontalScrollIndicator={true} className="flex-1">
             <ScrollView showsVerticalScrollIndicator={true} className="flex-1">
               <View className="bg-white m-2.5 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                
+
                 {/* Header Row: Eje X (Días) */}
                 <View className="flex-row bg-[#F8FAFC] border-b border-slate-200 h-14">
                   {/* Celda fija de esquina para Habitaciones (Eje Y) */}
@@ -324,37 +357,33 @@ export const BoardPage: React.FC = () => {
                       <View
                         key={d.dateStr}
                         style={{ width: CELL_WIDTH }}
-                        className={`justify-center items-center border-r border-slate-200/80 ${
-                          d.isToday ? 'bg-teal-50/80' : isWeekend ? 'bg-slate-100/50' : ''
-                        }`}
+                        className={`justify-center items-center border-r border-slate-200/80 ${d.isToday ? 'bg-teal-50/80' : isWeekend ? 'bg-slate-100/50' : ''
+                          }`}
                       >
                         <Text
-                          className={`text-[9.5px] uppercase font-bold tracking-tight ${
-                            d.isToday
+                          className={`text-[9.5px] uppercase font-bold tracking-tight ${d.isToday
                               ? 'text-[#488C8C] font-black'
                               : isWeekend
-                              ? 'text-slate-400'
-                              : 'text-slate-500'
-                          }`}
+                                ? 'text-slate-400'
+                                : 'text-slate-500'
+                            }`}
                         >
                           {d.dayOfWeek}
                         </Text>
-                        
+
                         <View
-                          className={`w-6 h-6 rounded-full justify-center items-center mt-0.5 ${
-                            d.isToday
+                          className={`w-6 h-6 rounded-full justify-center items-center mt-0.5 ${d.isToday
                               ? 'bg-[#488C8C]'
                               : isWeekend
-                              ? 'bg-slate-200/70'
-                              : ''
-                          }`}
+                                ? 'bg-slate-200/70'
+                                : ''
+                            }`}
                         >
                           <Text
-                            className={`text-[12px] font-black ${
-                              d.isToday
+                            className={`text-[12px] font-black ${d.isToday
                                 ? 'text-white'
                                 : 'text-slate-800'
-                            }`}
+                              }`}
                           >
                             {d.dayNumber}
                           </Text>
@@ -393,8 +422,8 @@ export const BoardPage: React.FC = () => {
                             status: room.isUnderMaintenance
                               ? 'MAINTENANCE'
                               : !room.isAvailable
-                              ? 'INACTIVE'
-                              : 'AVAILABLE',
+                                ? 'INACTIVE'
+                                : 'AVAILABLE',
                           });
                         }}
                       >
@@ -477,8 +506,8 @@ export const BoardPage: React.FC = () => {
                             endDayIndex !== -1
                               ? endDayIndex
                               : booking.checkOutDate > days[days.length - 1]?.dateStr
-                              ? days.length
-                              : startIndex + (booking.nights || 1);
+                                ? days.length
+                                : startIndex + (booking.nights || 1);
 
                           const spanDays = Math.max(endIndex - startIndex, 1);
                           const leftPos = 112 + startIndex * CELL_WIDTH; // 112px = ancho columna habitación (w-28)
@@ -597,34 +626,32 @@ export const BoardPage: React.FC = () => {
                 <View className="flex-row justify-between items-center pt-2 border-t border-slate-200/60">
                   <Text className="text-[12px] font-bold text-slate-500">Estado Habitación:</Text>
                   <View
-                    className={`px-2.5 py-0.5 rounded-full ${
-                      selectedCellInfo?.room.isUnderMaintenance
+                    className={`px-2.5 py-0.5 rounded-full ${selectedCellInfo?.room.isUnderMaintenance
                         ? 'bg-amber-100'
                         : !selectedCellInfo?.room.isAvailable
-                        ? 'bg-slate-200'
-                        : selectedCellInfo?.booking
-                        ? 'bg-sky-100'
-                        : 'bg-emerald-100'
-                    }`}
+                          ? 'bg-slate-200'
+                          : selectedCellInfo?.booking
+                            ? 'bg-sky-100'
+                            : 'bg-emerald-100'
+                      }`}
                   >
                     <Text
-                      className={`text-[10px] font-black ${
-                        selectedCellInfo?.room.isUnderMaintenance
+                      className={`text-[10px] font-black ${selectedCellInfo?.room.isUnderMaintenance
                           ? 'text-amber-800'
                           : !selectedCellInfo?.room.isAvailable
-                          ? 'text-slate-700'
-                          : selectedCellInfo?.booking
-                          ? 'text-sky-800'
-                          : 'text-emerald-700'
-                      }`}
+                            ? 'text-slate-700'
+                            : selectedCellInfo?.booking
+                              ? 'text-sky-800'
+                              : 'text-emerald-700'
+                        }`}
                     >
                       {selectedCellInfo?.room.isUnderMaintenance
                         ? 'EN MANTENIMIENTO'
                         : !selectedCellInfo?.room.isAvailable
-                        ? 'INACTIVA'
-                        : selectedCellInfo?.booking
-                        ? 'OCUPADA'
-                        : 'DISPONIBLE'}
+                          ? 'INACTIVA'
+                          : selectedCellInfo?.booking
+                            ? 'OCUPADA'
+                            : 'DISPONIBLE'}
                     </Text>
                   </View>
                 </View>
@@ -808,11 +835,24 @@ export const BoardPage: React.FC = () => {
 
                 {/* Número de Huéspedes */}
                 <FloatingLabelInput
-                  label="N° Huéspedes (Capacidad max: " + (targetRoomForBooking?.capacity || 2) + ")"
+                  label={`N° Huéspedes (Capacidad max: ${targetRoomForBooking?.capacity || 2})`}
                   iconName="people-outline"
                   keyboardType="numeric"
                   value={manualGuestsCount}
-                  onChangeText={setManualGuestsCount}
+                  onChangeText={(val) => {
+                    const cleanVal = val.replace(/[^0-9]/g, '');
+                    if (!cleanVal) {
+                      setManualGuestsCount('');
+                      return;
+                    }
+                    const num = parseInt(cleanVal, 10);
+                    const maxCap = targetRoomForBooking?.capacity || 2;
+                    if (num > maxCap) {
+                      setManualGuestsCount(String(maxCap));
+                    } else {
+                      setManualGuestsCount(String(num));
+                    }
+                  }}
                 />
 
                 {/* Resumen del Monto Total Calculado Automáticamente (Solo Lectura) */}
@@ -851,16 +891,16 @@ export const BoardPage: React.FC = () => {
                             manualStatus === 'CONFIRMED'
                               ? '#0A3B7B'
                               : manualStatus === 'CHECKED_IN'
-                              ? '#488C8C'
-                              : '#F59E0B',
+                                ? '#488C8C'
+                                : '#F59E0B',
                         }}
                       />
                       <Text className="text-[13.5px] font-bold text-slate-800">
                         {manualStatus === 'CONFIRMED'
                           ? 'Confirmada'
                           : manualStatus === 'CHECKED_IN'
-                          ? 'En Estadía (Check-In)'
-                          : 'Pendiente de Pago'}
+                            ? 'En Estadía (Check-In)'
+                            : 'Pendiente de Pago'}
                       </Text>
                     </View>
                     <Ionicons name="chevron-down" size={18} color="#64748B" />
