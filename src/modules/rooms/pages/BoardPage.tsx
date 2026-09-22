@@ -815,27 +815,14 @@ export const BoardPage: React.FC = () => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Noches y Personas */}
-                <View className="flex-row gap-2.5">
-                  <View className="w-[45%]">
-                    <FloatingLabelInput
-                      label="Noches"
-                      iconName="time-outline"
-                      keyboardType="numeric"
-                      value={manualNights}
-                      onChangeText={handleNightsChange}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <FloatingLabelInput
-                      label="N° Huéspedes"
-                      iconName="people-outline"
-                      keyboardType="numeric"
-                      value={manualGuestsCount}
-                      onChangeText={setManualGuestsCount}
-                    />
-                  </View>
-                </View>
+                {/* Número de Huéspedes */}
+                <FloatingLabelInput
+                  label="N° Huéspedes (Capacidad max: " + (targetRoomForBooking?.capacity || 2) + ")"
+                  iconName="people-outline"
+                  keyboardType="numeric"
+                  value={manualGuestsCount}
+                  onChangeText={setManualGuestsCount}
+                />
 
                 {/* Resumen del Monto Total Calculado Automáticamente (Solo Lectura) */}
                 <View className="bg-[#EBF4F4] border-[1.2px] border-[#CDE5E5] rounded-xl px-4 py-2.5 my-1 flex-row justify-between items-center">
