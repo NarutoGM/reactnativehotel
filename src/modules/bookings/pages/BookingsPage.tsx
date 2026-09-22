@@ -15,6 +15,7 @@ import { bookingsApi, Booking } from '../api/bookings.api';
 import { Room } from '@/modules/rooms/api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
 import { RoomDetailModal } from '@/modules/rooms/components/RoomDetailModal';
+import { SuccessModal } from '@/components/SuccessModal';
 
 interface BookingsPageProps {
   currentUser: User;
@@ -37,6 +38,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [detailRoom, setDetailRoom] = useState<Room | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [uploadSuccessInfo, setUploadSuccessInfo] = useState<{ bookingCode: string } | null>(null);
 
   useEffect(() => {
     loadBookings();
@@ -89,7 +91,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           }
         }
         setUploadingId(null);
-        Alert.alert('¡Éxito!', 'Comprobante(s) subido(s) correctamente.');
+        setUploadSuccessInfo({ bookingCode: booking.bookingId });
         loadBookings();
       }
     } catch (e: any) {
@@ -386,6 +388,16 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           )}
         </View>
       </Modal>
+
+      {/* Modal de Éxito al Subir Comprobante (Custom UI con Tailwind) */}
+      <SuccessModal
+        visible={!!uploadSuccessInfo}
+        title="¡Comprobante Registrado!"
+        message="Tu comprobante de pago ha sido adjuntado con éxito. El equipo de recepción lo verificará para confirmar tu reserva."
+        badgeText={uploadSuccessInfo ? `Código: ${uploadSuccessInfo.bookingCode}` : undefined}
+        buttonText="Entendido"
+        onClose={() => setUploadSuccessInfo(null)}
+      />
     </View>
   );
 };
