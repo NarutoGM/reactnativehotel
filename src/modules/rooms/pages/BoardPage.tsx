@@ -116,16 +116,6 @@ export const BoardPage: React.FC = () => {
     setManualBookingModalVisible(true);
   };
 
-  const handleNightsChange = (nightsStr: string) => {
-    setManualNights(nightsStr);
-    const n = parseInt(nightsStr, 10) || 1;
-    if (manualCheckIn && targetRoomForBooking) {
-      const d = new Date(manualCheckIn + 'T00:00:00');
-      d.setDate(d.getDate() + n);
-      setManualCheckOut(d.toISOString().split('T')[0]);
-      setManualTotalAmount(String(n * targetRoomForBooking.pricePerNight));
-    }
-  };
 
   const handleSaveManualBooking = async () => {
     if (!manualGuestName.trim() || !manualCheckIn || !manualCheckOut || !targetRoomForBooking) {
