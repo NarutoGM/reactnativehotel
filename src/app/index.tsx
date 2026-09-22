@@ -32,8 +32,8 @@ export default function AppScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
-      {/* Barra de estado con iconos oscuros y fondo blanco en Android */}
-      <StatusBar style="dark" backgroundColor="#FFFFFF" translucent={false} />
+      {/* Barra de estado con iconos oscuros */}
+      <StatusBar style="dark" />
 
       {/* Top Header con Avatar de Iniciales y Tooltip interactivo - FIJO EN LA PARTE SUPERIOR */}
       <UserMenuHeader
