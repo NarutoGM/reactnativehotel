@@ -94,9 +94,9 @@ export const BoardPage: React.FC = () => {
   }, [selectedMonthOffset]);
 
   // Abrir Modal para crear una reserva presencial / manual rápida
-  const [targetRoomForBooking, setTargetRoomForBooking] = useState<Room | null>(null);
+  const [targetRoomForBooking, setTargetRoomForBooking] = useState<(Room & { bookings?: Booking[] }) | null>(null);
 
-  const handleOpenManualBooking = (room: Room, dateStr: string) => {
+  const handleOpenManualBooking = (room: Room & { bookings?: Booking[] }, dateStr: string) => {
     setTargetRoomForBooking(room);
     setManualCheckIn(dateStr);
 
