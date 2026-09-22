@@ -142,18 +142,10 @@ export const BoardPage: React.FC = () => {
       {/* Top Bar Compacta: Título y Selector de Rango */}
       <View className="bg-white px-4 py-2.5 border-b border-slate-200">
         <View className="flex-row justify-between items-center">
-          <View className="flex-row items-center gap-2">
-            <View className="w-8 h-8 rounded-xl bg-teal-50 justify-center items-center border border-teal-200">
-              <Ionicons name="calendar" size={16} color="#488C8C" />
-            </View>
-            <View>
-              <Text className="text-[15px] font-black text-slate-900 leading-tight">
-                Tablero PMS
-              </Text>
-              <Text className="text-[10.5px] text-slate-400 font-semibold">
-                Gestión de Ocupación
-              </Text>
-            </View>
+          <View>
+            <Text className="text-[16px] font-black text-slate-900 leading-tight">
+              Tablero PMS
+            </Text>
           </View>
 
           {/* Selector de Mes con estilo Pill */}
