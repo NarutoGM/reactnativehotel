@@ -1,10 +1,8 @@
 import '../global.css';
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme, Text, TextInput } from 'react-native';
 import {
   useFonts,
   Sora_400Regular,
@@ -17,8 +15,6 @@ import {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   const [fontsLoaded] = useFonts({
     Sora_400Regular,
     Sora_500Medium,
@@ -44,9 +40,10 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }} />
-    </ThemeProvider>
+    </>
   );
 }
+
