@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -48,32 +48,39 @@ export const UserMenuHeader: React.FC<UserMenuHeaderProps> = ({
         </View>
       </View>
 
-      {/* Avatar Circle with Linear Gradient and Initials */}
+      {/* Avatar Circle with Linear Gradient / Image */}
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
         activeOpacity={0.82}
       >
-        <LinearGradient
-          colors={['#5FA7A7', '#488C8C', '#2E6666']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-            shadowColor: '#488C8C',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.35,
-            shadowRadius: 5,
-            elevation: 4,
-          }}
-        >
-          <Text className="text-white font-black text-[13.5px] tracking-wider">
-            {initials}
-          </Text>
-        </LinearGradient>
+        {currentUser.avatarUrl ? (
+          <Image
+            source={{ uri: currentUser.avatarUrl }}
+            className="w-10 h-10 rounded-full border border-[#488C8C]"
+          />
+        ) : (
+          <LinearGradient
+            colors={['#5FA7A7', '#488C8C', '#2E6666']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              shadowColor: '#488C8C',
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.35,
+              shadowRadius: 5,
+              elevation: 4,
+            }}
+          >
+            <Text className="text-white font-black text-[13.5px] tracking-wider">
+              {initials}
+            </Text>
+          </LinearGradient>
+        )}
       </TouchableOpacity>
 
       {/* Tooltip / Popup Natural y Limpio */}

@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, Modal } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Room } from '@/modules/rooms/api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
+import { Room } from '@/modules/rooms/api/rooms.api';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { Modal, Text, View } from 'react-native';
 
 interface BookingModalsProps {
   selectedRoom: Room | null;
@@ -129,9 +129,9 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
               Tu reserva para <Text className="font-bold">{bookingSuccessModal?.roomTitle}</Text> ha sido creada con éxito.
             </Text>
 
-            <View className="bg-slate-50 rounded-2xl p-4 w-full items-center my-4">
+            <View className="w-full items-center my-3">
               <Text className="text-slate-500 text-[11px] font-semibold">Código de Reserva:</Text>
-              <Text className="text-slate-900 text-[22px] font-black tracking-widest my-1">
+              <Text className="text-slate-900 text-[24px] font-black tracking-widest my-1">
                 {bookingSuccessModal?.bookingId}
               </Text>
               <Text className="text-[#488C8C] font-extrabold text-[15px]">

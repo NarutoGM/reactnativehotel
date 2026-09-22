@@ -45,7 +45,11 @@ export default function AppScreen() {
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
         {activeTab === 'adminRooms' && <AdminRoomsPage />}
         {activeTab === 'profile' && (
-          <ProfilePage currentUser={currentUser} onLogout={() => setCurrentUser(null)} />
+          <ProfilePage
+            currentUser={currentUser}
+            onUpdateUser={(updated) => setCurrentUser(updated)}
+            onLogout={() => setCurrentUser(null)}
+          />
         )}
       </View>
 

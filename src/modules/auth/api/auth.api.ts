@@ -5,6 +5,8 @@ export interface User {
   email: string;
   fullName: string;
   documentNumber: string;
+  phone?: string;
+  avatarUrl?: string | null;
   role: 'ADMIN' | 'RECEPTIONIST' | 'GUEST';
   createdAt?: number | string;
 }
@@ -19,7 +21,14 @@ export interface RegisterPayload {
   password: string;
   fullName: string;
   documentNumber: string;
+  phone?: string;
   role?: 'ADMIN' | 'RECEPTIONIST' | 'GUEST';
+}
+
+export interface UpdateProfilePayload {
+  fullName?: string;
+  phone?: string;
+  documentNumber?: string;
 }
 
 export const authApi = {
@@ -37,6 +46,24 @@ export const authApi = {
       ...payload,
       role: payload.role || 'GUEST',
     });
+    return {
+      success: res.success,
+      user: res.data,
+      error: res.error,
+    };
+  },
+
+  async updateProfile(userId: string, payload: UpdateProfilePayload): Promise<{ success: boolean; user?: User; error?: string }> {
+    const res = await httpClient.patch<User>(`/auth/profile/${userId}`, payload);
+    return {
+      success: res.success,
+      user: res.data,
+      error: res.error,
+    };
+  },
+
+  async uploadAvatar(userId: string, fileUri: string): Promise<{ success: boolean; user?: User; error?: string }> {
+    const res = await httpClient.upload<User>(`/auth/profile/${userId}/avatar`, fileUri);
     return {
       success: res.success,
       user: res.data,

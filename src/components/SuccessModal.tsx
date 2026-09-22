@@ -48,8 +48,8 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
           {/* Optional Badge */}
           {badgeText ? (
-            <View className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 mt-3.5 items-center">
-              <Text className="text-slate-700 text-[12px] font-bold tracking-wide">
+            <View className="py-2 mt-2 items-center">
+              <Text className="text-slate-800 text-[14px] font-bold tracking-wide">
                 {badgeText}
               </Text>
             </View>

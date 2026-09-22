@@ -395,9 +395,18 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                     </Text>
                   </View>
 
-                  <Text className="text-slate-900 font-bold text-[14px] mt-1.5">
-                    Total: <Text className="font-black text-[16px] text-slate-900">S/ {b.totalAmount}</Text>
-                  </Text>
+                  <View className="mt-2 pt-2 border-t border-slate-100 gap-1">
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-slate-500 text-[12px] font-semibold">Total estadía:</Text>
+                      <Text className="text-slate-800 text-[13px] font-bold">S/ {b.totalAmount}</Text>
+                    </View>
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-slate-700 text-[13px] font-extrabold">Monto para reservar (50%):</Text>
+                      <Text className="text-[#488C8C] text-[16px] font-black">
+                        S/ {Math.round(b.totalAmount * 0.5)}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
 
                 {/* Voucher Action: Comprobantes sin borde/bg pesado, hasta 2 comprobantes */}
@@ -407,11 +416,6 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                       <Text className="text-slate-900 text-[12px] font-extrabold">
                         {vouchers.length === 1 ? 'Comprobante Adjunto' : 'Comprobantes Adjuntos (2/2)'}
                       </Text>
-                      {b.voucherSubmitted && (
-                        <View className="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                          <Text className="text-emerald-700 text-[10px] font-bold">✓ Enviado a revisión</Text>
-                        </View>
-                      )}
                     </View>
 
                     <View className="flex-row items-center gap-3">
