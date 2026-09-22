@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Alert, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Room, Booking, formatRoomNumber, roomsApi } from '../api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
@@ -38,6 +38,7 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
   const [editStatus, setEditStatus] = useState<BookingStatusType>('CONFIRMED');
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
   const [savingBooking, setSavingBooking] = useState(false);
+  const [previewVoucherUri, setPreviewVoucherUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (cellInfo?.booking) {
@@ -46,6 +47,7 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
       setEditGuestsCount(String(cellInfo.booking.guestsCount || 2));
       setEditStatus((cellInfo.booking.status as BookingStatusType) || 'CONFIRMED');
       setIsEditingBooking(false);
+      setPreviewVoucherUri(null);
     }
   }, [cellInfo, visible]);
 
@@ -110,6 +112,10 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
       default: return st;
     }
   };
+
+  const vouchersList = cellInfo.booking?.voucherFileName
+    ? cellInfo.booking.voucherFileName.split(',').map((v) => v.trim()).filter(Boolean)
+    : [];
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -210,7 +216,7 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
                         color="#488C8C"
                       />
                       <Text className="text-[11px] font-bold text-[#488C8C]">
-                        {isEditingBooking ? 'Ver datos' : 'Editar Huésped'}
+                        {isEditingBooking ? 'Ver datos' : 'Editar Reserva'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -250,6 +256,38 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
                         <Text className="text-[12px] text-slate-700 font-semibold">
                           {cellInfo.booking.checkInDate} al {cellInfo.booking.checkOutDate} ({cellInfo.booking.nights} noches)
                         </Text>
+                      </View>
+
+                      {/* Sección de Comprobante / Voucher de Pago */}
+                      <View className="pt-1.5 pb-0.5">
+                        <Text className="text-[11px] font-bold text-slate-500 uppercase tracking-tight mb-1">
+                          Comprobante de Pago:
+                        </Text>
+                        {vouchersList.length > 0 ? (
+                          <View className="flex-row gap-2 flex-wrap">
+                            {vouchersList.map((uri, idx) => (
+                              <TouchableOpacity
+                                key={idx}
+                                activeOpacity={0.8}
+                                onPress={() => setPreviewVoucherUri(uri)}
+                                className="flex-row items-center bg-[#EBF4F4] border border-[#CDE5E5] px-3 py-1.5 rounded-xl gap-1.5"
+                              >
+                                <Ionicons name="receipt-outline" size={14} color="#488C8C" />
+                                <Text className="text-[11.5px] font-bold text-[#2E6666]">
+                                  Ver Voucher {vouchersList.length > 1 ? `#${idx + 1}` : ''}
+                                </Text>
+                                <Ionicons name="eye-outline" size={13} color="#488C8C" />
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        ) : (
+                          <View className="flex-row items-center gap-1.5 bg-slate-100/80 px-2.5 py-1.5 rounded-xl border border-slate-200">
+                            <Ionicons name="alert-circle-outline" size={14} color="#94A3B8" />
+                            <Text className="text-[11.5px] text-slate-500 font-medium">
+                              Sin voucher adjunto (Reserva presencial o pendiente)
+                            </Text>
+                          </View>
+                        )}
                       </View>
 
                       <View className="flex-row justify-between items-center pt-2 border-t border-slate-100">
@@ -375,6 +413,31 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
         onSelect={setEditStatus}
         onClose={() => setStatusPickerOpen(false)}
       />
+
+      {/* Modal de Vista Previa del Voucher en Pantalla Completa */}
+      <Modal
+        visible={!!previewVoucherUri}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewVoucherUri(null)}
+      >
+        <View className="flex-1 bg-black/90 justify-center items-center p-4">
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="absolute top-12 right-6 z-50 w-11 h-11 rounded-full bg-white/25 items-center justify-center border border-white/40"
+            onPress={() => setPreviewVoucherUri(null)}
+          >
+            <Ionicons name="close" size={26} color="#FFFFFF" />
+          </TouchableOpacity>
+          {previewVoucherUri && (
+            <Image
+              source={{ uri: previewVoucherUri }}
+              className="w-full h-[80%] rounded-2xl"
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </Modal>
   );
 };

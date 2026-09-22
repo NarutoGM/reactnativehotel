@@ -12,7 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { User, authApi } from '../../auth/api/auth.api';
 import { SuccessModal } from '@/components/SuccessModal';
-import { CreateUserModal } from '../components/CreateUserModal';
 
 interface ProfilePageProps {
   currentUser: User;
@@ -27,7 +26,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 }) => {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createUserModalVisible, setCreateUserModalVisible] = useState(false);
 
   const handlePickAvatar = async () => {
     try {
@@ -181,54 +179,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </View>
           </View>
         </View>
-
-        {/* Sección Exclusiva para Administrador: Gestión y Creación de Usuarios */}
-        {currentUser.role === 'ADMIN' && (
-          <View className="bg-white rounded-3xl p-5 mt-4 border border-slate-200 shadow-sm elevation-2">
-            <View className="flex-row justify-between items-center mb-3.5">
-              <View className="flex-row items-center gap-2.5">
-                <View className="w-9 h-9 rounded-xl bg-[#EFF6FF] items-center justify-center">
-                  <Ionicons name="shield-checkmark" size={20} color="#0A3B7B" />
-                </View>
-                <View>
-                  <Text className="text-[16px] font-black text-slate-900">
-                    Panel de Administración
-                  </Text>
-                  <Text className="text-[12px] font-medium text-slate-500">
-                    Gestión de Cuentas y Accesos
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-3">
-              <Text className="text-[12.5px] font-semibold text-slate-600 leading-5">
-                Como Administrador, puedes dar de alta nuevos usuarios en el sistema asignándoles el rol de <Text className="font-black text-[#0A3B7B]">Admin</Text>, <Text className="font-black text-[#488C8C]">Recepcionista</Text> o <Text className="font-black text-emerald-600">Huésped</Text>.
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setCreateUserModalVisible(true)}
-              className="bg-[#0A3B7B] active:bg-[#072a59] rounded-2xl py-3.5 px-4 flex-row items-center justify-center gap-2 shadow-sm"
-            >
-              <Ionicons name="person-add" size={18} color="#FFFFFF" />
-              <Text className="text-white text-[14px] font-black tracking-wide">
-                Crear Nuevo Usuario
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
-
-      {/* Modal para Crear Nuevo Usuario */}
-      <CreateUserModal
-        visible={createUserModalVisible}
-        onClose={() => setCreateUserModalVisible(false)}
-        onSuccess={() => {
-          Alert.alert('Éxito', 'El nuevo usuario ya puede iniciar sesión en la aplicación.');
-        }}
-      />
 
       {/* Modal de Éxito al actualizar foto */}
       <SuccessModal

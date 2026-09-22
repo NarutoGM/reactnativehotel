@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'board' | 'profile';
+export type MainTabType = 'rooms' | 'bookings' | 'adminRooms' | 'board' | 'users' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: MainTabType;
@@ -16,6 +16,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, role = 'G
   const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 14);
   const isGuest = role === 'GUEST';
   const isAdminOrReception = role === 'ADMIN' || role === 'RECEPTIONIST';
+  const isAdmin = role === 'ADMIN';
 
   return (
     <View style={[styles.container, { paddingBottom: bottomPadding }]}>
@@ -86,6 +87,24 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, role = 'G
               Tablero
             </Text>
           </TouchableOpacity>
+
+          {/* Pestaña exclusiva de Usuarios para Administrador */}
+          {isAdmin && (
+            <TouchableOpacity
+              style={styles.tabBtn}
+              onPress={() => onTabChange('users')}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={activeTab === 'users' ? 'people' : 'people-outline'}
+                size={22}
+                color={activeTab === 'users' ? '#488C8C' : '#94A3B8'}
+              />
+              <Text style={[styles.tabLabel, activeTab === 'users' && styles.tabLabelActive]}>
+                Usuarios
+              </Text>
+            </TouchableOpacity>
+          )}
         </>
       )}
 

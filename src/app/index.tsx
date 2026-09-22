@@ -6,6 +6,7 @@ import { User } from '@/modules/auth/api/auth.api';
 import { sessionManager } from '@/modules/auth/services/sessionManager';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ProfilePage } from '@/modules/auth/pages/ProfilePage';
+import { AdminUsersPage } from '@/modules/auth/pages/AdminUsersPage';
 import { RoomsPage } from '@/modules/rooms/pages/RoomsPage';
 import { AdminRoomsPage } from '@/modules/rooms/pages/AdminRoomsPage';
 import { BoardPage } from '@/modules/rooms/pages/BoardPage';
@@ -89,6 +90,7 @@ export default function AppScreen() {
         {activeTab === 'bookings' && <BookingsPage currentUser={currentUser} />}
         {activeTab === 'adminRooms' && <AdminRoomsPage />}
         {activeTab === 'board' && <BoardPage />}
+        {activeTab === 'users' && <AdminUsersPage />}
         {activeTab === 'profile' && (
           <ProfilePage
             currentUser={currentUser}
