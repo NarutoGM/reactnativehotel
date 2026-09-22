@@ -88,6 +88,21 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, role = 'G
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.tabBtn}
+            onPress={() => onTabChange('bookings')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={activeTab === 'bookings' ? 'receipt' : 'receipt-outline'}
+              size={22}
+              color={activeTab === 'bookings' ? '#488C8C' : '#94A3B8'}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'bookings' && styles.tabLabelActive]}>
+              Reservas
+            </Text>
+          </TouchableOpacity>
+
           {/* Pestaña exclusiva de Usuarios para Administrador */}
           {isAdmin && (
             <TouchableOpacity
