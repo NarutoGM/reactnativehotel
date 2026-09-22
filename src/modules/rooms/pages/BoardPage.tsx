@@ -116,16 +116,45 @@ export const BoardPage: React.FC = () => {
     return { status: 'AVAILABLE' };
   };
 
-  // Determinar color temático y nombre del canal/fuente para una reserva
-  const getBookingTheme = (booking: Booking, index: number) => {
-    const themes = [
-      { bg: '#0A3B7B', textColor: '#FFFFFF', label: 'Booking.com', brandIcon: 'globe-outline' },
-      { bg: '#F43F5E', textColor: '#FFFFFF', label: 'Airbnb', brandIcon: 'home-outline' },
-      { bg: '#FBBF24', textColor: '#1E293B', label: booking.guestName || 'Reserva Directa', brandIcon: 'person' },
-      { bg: '#84CC16', textColor: '#FFFFFF', label: booking.guestName || 'Recepción', brandIcon: 'business-outline' },
-      { bg: '#488C8C', textColor: '#FFFFFF', label: 'Aura Web', brandIcon: 'shield-checkmark-outline' },
-    ];
-    return themes[index % themes.length];
+  // Determinar color temático según el estado REAL de la reserva en la Base de Datos (BookingStatus)
+  const getBookingTheme = (booking: Booking) => {
+    switch (booking.status) {
+      case 'CONFIRMED':
+        return {
+          bg: '#0A3B7B', // Azul Booking / Corporativo Elegante
+          textColor: '#FFFFFF',
+          statusLabel: 'Confirmada',
+          brandIcon: 'checkmark-done-circle',
+        };
+      case 'CHECKED_IN':
+        return {
+          bg: '#488C8C', // Brand Teal - Huésped en Habitación
+          textColor: '#FFFFFF',
+          statusLabel: 'En Estadía',
+          brandIcon: 'key',
+        };
+      case 'PENDING':
+        return {
+          bg: '#F59E0B', // Ámbar / Pendiente de Voucher
+          textColor: '#FFFFFF',
+          statusLabel: 'Pendiente',
+          brandIcon: 'time-outline',
+        };
+      case 'CHECKED_OUT':
+        return {
+          bg: '#64748B', // Gris Pizarra
+          textColor: '#FFFFFF',
+          statusLabel: 'Finalizada',
+          brandIcon: 'log-out-outline',
+        };
+      default:
+        return {
+          bg: '#0A3B7B',
+          textColor: '#FFFFFF',
+          statusLabel: 'Reserva',
+          brandIcon: 'calendar',
+        };
+    }
   };
 
   const CELL_WIDTH = 48;
@@ -170,8 +199,8 @@ export const BoardPage: React.FC = () => {
           </View>
         </View>
 
-        {/* Leyenda de Estados */}
-        <View className="flex-row items-center justify-between mt-2 pt-2 border-t border-slate-100 px-1">
+        {/* Leyenda con los Estados Reales de la BD (Room & BookingStatus) */}
+        <View className="flex-row items-center justify-between mt-2 pt-2 border-t border-slate-100 px-0.5">
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
             <Text className="text-[10px] text-slate-600 font-bold">Disponible</Text>
@@ -182,11 +211,11 @@ export const BoardPage: React.FC = () => {
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#0A3B7B]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Booking</Text>
+            <Text className="text-[10px] text-slate-600 font-bold">Confirmada</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
-            <View className="w-2.5 h-2.5 rounded-full bg-[#F43F5E]" />
-            <Text className="text-[10px] text-slate-600 font-bold">Airbnb</Text>
+            <View className="w-2.5 h-2.5 rounded-full bg-[#488C8C]" />
+            <Text className="text-[10px] text-slate-600 font-bold">En Estadía</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-2.5 h-2.5 rounded-full bg-[#64748B]" />
@@ -373,11 +402,7 @@ export const BoardPage: React.FC = () => {
                               ? days.length
                               : startIndex + (booking.nights || 1);
 
-                          const spanDays = Math.max(endIndex - startIndex, 1);
-                          const leftPos = 112 + startIndex * CELL_WIDTH; // 112px = ancho de la columna de habitación (w-28)
-                          const ribbonWidth = spanDays * CELL_WIDTH - 6;
-
-                          const theme = getBookingTheme(booking, bIdx);
+                          const theme = getBookingTheme(booking);
 
                           return (
                             <TouchableOpacity
@@ -420,7 +445,7 @@ export const BoardPage: React.FC = () => {
                                   className="text-[11.5px] font-black tracking-tight"
                                   numberOfLines={1}
                                 >
-                                  {booking.guestName || theme.label}
+                                  {booking.guestName || theme.statusLabel}
                                 </Text>
                               </View>
                               <Text
@@ -428,7 +453,7 @@ export const BoardPage: React.FC = () => {
                                 className="text-[9.5px] font-bold mt-0.5"
                                 numberOfLines={1}
                               >
-                                {booking.nights} noches · S/ {booking.totalAmount}
+                                {booking.nights} n. · {theme.statusLabel}
                               </Text>
                             </TouchableOpacity>
                           );
