@@ -39,10 +39,33 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [detailRoom, setDetailRoom] = useState<Room | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [uploadSuccessInfo, setUploadSuccessInfo] = useState<{ bookingCode: string } | null>(null);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     loadBookings();
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
+
+  const getRemainingTime = (createdAtStr: string) => {
+    const createdTime = new Date(createdAtStr).getTime();
+    const expiryTime = createdTime + 15 * 60 * 1000;
+    const diffMs = expiryTime - now;
+    if (diffMs <= 0) {
+      return { expired: true, text: '00:00', totalSeconds: 0 };
+    }
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return {
+      expired: false,
+      text: `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`,
+      totalSeconds,
+    };
+  };
 
   const loadBookings = async () => {
     setLoading(true);
@@ -91,12 +114,45 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           }
         }
         setUploadingId(null);
-        setUploadSuccessInfo({ bookingCode: booking.bookingId });
         loadBookings();
       }
     } catch (e: any) {
       setUploadingId(null);
       Alert.alert('Error', e.message || 'Ocurrió un error al seleccionar la imagen.');
+    }
+  };
+
+  const handleDeleteVoucher = (bookingId: string, index: number) => {
+    Alert.alert(
+      'Eliminar Comprobante',
+      '¿Deseas quitar esta captura de comprobante?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            const res = await bookingsApi.deleteVoucher(bookingId, index);
+            if (res.success) {
+              loadBookings();
+            } else {
+              Alert.alert('Error', res.error || 'No se pudo eliminar el comprobante.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleSubmitVouchers = async (booking: Booking) => {
+    setSubmittingId(booking.id);
+    const res = await bookingsApi.submitVouchers(booking.id);
+    setSubmittingId(null);
+    if (res.success) {
+      setUploadSuccessInfo({ bookingCode: booking.bookingId });
+      loadBookings();
+    } else {
+      Alert.alert('Error', res.error || 'No se pudo enviar el comprobante.');
     }
   };
 
@@ -258,6 +314,55 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                   </View>
                 </View>
 
+                {/* Banner de Contador Regresivo (15 minutos para subir comprobante) */}
+                {isPending && !b.voucherSubmitted && (
+                  (() => {
+                    const timer = getRemainingTime(b.createdAt);
+                    if (timer.expired) {
+                      return (
+                        <View className="mt-2.5 bg-red-50 border border-red-200 rounded-xl px-3 py-2 flex-row items-center gap-2">
+                          <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                          <Text className="text-red-700 text-[11px] font-bold flex-1">
+                            Plazo vencido · La reserva será cancelada automáticamente
+                          </Text>
+                        </View>
+                      );
+                    }
+                    const isUrgent = timer.totalSeconds <= 180; // Menos de 3 minutos
+                    return (
+                      <View
+                        className={`mt-2.5 border rounded-xl px-3 py-2 flex-row items-center justify-between ${
+                          isUrgent ? 'bg-red-50/80 border-red-200' : 'bg-amber-50/80 border-amber-200'
+                        }`}
+                      >
+                        <View className="flex-row items-center gap-1.5 flex-1">
+                          <Ionicons
+                            name="time-outline"
+                            size={16}
+                            color={isUrgent ? '#DC2626' : '#D97706'}
+                          />
+                          <Text
+                            className={`text-[11px] font-bold ${
+                              isUrgent ? 'text-red-700' : 'text-amber-800'
+                            }`}
+                          >
+                            Tiempo para subir comprobante:
+                          </Text>
+                        </View>
+                        <View
+                          className={`px-2 py-0.5 rounded-lg ${
+                            isUrgent ? 'bg-red-600' : 'bg-amber-600'
+                          }`}
+                        >
+                          <Text className="text-white text-[12px] font-black tracking-wider">
+                            {timer.text}
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })()
+                )}
+
                 {/* Room Info */}
                 <View className="pt-3 pb-2">
                   <TouchableOpacity
@@ -298,31 +403,50 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                 {/* Voucher Action: Comprobantes sin borde/bg pesado, hasta 2 comprobantes */}
                 {hasVouchers ? (
                   <View className="mt-2.5 pt-2.5 border-t border-slate-100">
-                    <Text className="text-slate-900 text-[12px] font-extrabold mb-2">
-                      {vouchers.length === 1 ? 'Comprobante Adjunto' : 'Comprobantes Adjuntos (2/2)'}
-                    </Text>
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-slate-900 text-[12px] font-extrabold">
+                        {vouchers.length === 1 ? 'Comprobante Adjunto' : 'Comprobantes Adjuntos (2/2)'}
+                      </Text>
+                      {b.voucherSubmitted && (
+                        <View className="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                          <Text className="text-emerald-700 text-[10px] font-bold">✓ Enviado a revisión</Text>
+                        </View>
+                      )}
+                    </View>
 
                     <View className="flex-row items-center gap-3">
                       {vouchers.map((url, idx) => (
-                        <TouchableOpacity
-                          key={idx}
-                          activeOpacity={0.8}
-                          onPress={() => setPreviewImageUrl(url)}
-                          className="relative rounded-xl overflow-hidden"
-                        >
-                          <Image
-                            source={{ uri: url }}
-                            className="w-15 h-15 rounded-xl bg-slate-200"
-                            resizeMode="cover"
-                          />
-                          <View className="absolute bottom-1 right-1 bg-slate-900/75 px-1.5 py-0.5 rounded">
-                            <Text className="text-white text-[9px] font-extrabold">#{idx + 1}</Text>
-                          </View>
-                        </TouchableOpacity>
+                        <View key={idx} className="relative">
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setPreviewImageUrl(url)}
+                            className="relative rounded-xl overflow-hidden"
+                          >
+                            <Image
+                              source={{ uri: url }}
+                              className="w-15 h-15 rounded-xl bg-slate-200"
+                              resizeMode="cover"
+                            />
+                            <View className="absolute bottom-1 right-1 bg-slate-900/75 px-1.5 py-0.5 rounded">
+                              <Text className="text-white text-[9px] font-extrabold">#{idx + 1}</Text>
+                            </View>
+                          </TouchableOpacity>
+
+                          {/* Botón para eliminar foto (solo si aún no se ha enviado definitivamente) */}
+                          {!b.voucherSubmitted && isPending && (
+                            <TouchableOpacity
+                              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 justify-center items-center shadow-sm z-10"
+                              onPress={() => handleDeleteVoucher(b.id, idx)}
+                              activeOpacity={0.7}
+                            >
+                              <Ionicons name="close" size={13} color="#FFFFFF" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
                       ))}
 
-                      {/* Si solo hay 1 comprobante y sigue pendiente, permitir adjuntar el 2do */}
-                      {vouchers.length < 2 && isPending && (
+                      {/* Si solo hay 1 comprobante y aún no se envió, permitir adjuntar el 2do */}
+                      {vouchers.length < 2 && isPending && !b.voucherSubmitted && (
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => handlePickAndUploadVoucher(b)}
@@ -337,6 +461,20 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         </TouchableOpacity>
                       )}
                     </View>
+
+                    {/* Botón de Enviar definitivo: una vez presionado bloquea la edición */}
+                    {!b.voucherSubmitted && isPending && (
+                      <View className="mt-3">
+                        <LuxuryButton
+                          title="Enviar Comprobante(s)"
+                          variant="solid"
+                          size="sm"
+                          iconName="paper-plane-outline"
+                          loading={submittingId === b.id}
+                          onPress={() => handleSubmitVouchers(b)}
+                        />
+                      </View>
+                    )}
                   </View>
                 ) : isPending ? (
                   <View className="mt-1.5">

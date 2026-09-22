@@ -17,6 +17,7 @@ export interface Booking {
   status: BookingStatus;
   totalAmount: number;
   voucherFileName?: string | null;
+  voucherSubmitted?: boolean;
   createdAt: string;
   room?: Room;
 }
@@ -64,6 +65,24 @@ export const bookingsApi = {
     } as any);
 
     const res = await httpClient.postFormData<Booking>(`/rooms/bookings/${bookingId}/voucher`, formData);
+    return {
+      success: res.success,
+      booking: res.data,
+      error: res.error,
+    };
+  },
+
+  async deleteVoucher(bookingId: string, index: number): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+    const res = await httpClient.delete<Booking>(`/rooms/bookings/${bookingId}/voucher?index=${index}`);
+    return {
+      success: res.success,
+      booking: res.data,
+      error: res.error,
+    };
+  },
+
+  async submitVouchers(bookingId: string): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+    const res = await httpClient.post<Booking>(`/rooms/bookings/${bookingId}/submit-voucher`, {});
     return {
       success: res.success,
       booking: res.data,

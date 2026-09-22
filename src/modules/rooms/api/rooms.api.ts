@@ -35,6 +35,7 @@ export interface Booking {
   status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
   totalAmount: number;
   voucherFileName?: string | null;
+  voucherSubmitted?: boolean;
   createdAt: string;
   room?: Room;
 }
