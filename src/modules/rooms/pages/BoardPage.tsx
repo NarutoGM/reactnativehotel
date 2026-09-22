@@ -9,8 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Room, roomsApi, formatRoomNumber, Booking } from '../api/rooms.api';
+import { Room, roomsApi, formatRoomNumber, Booking, BookingPayload } from '../api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { CalendarPickerModal } from '../components/CalendarPickerModal';
 
 export const BoardPage: React.FC = () => {
   const [rooms, setRooms] = useState<(Room & { bookings?: Booking[] })[]>([]);
@@ -24,6 +26,20 @@ export const BoardPage: React.FC = () => {
     booking?: Booking;
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Estado para la Creación de Reserva Manual / Presencial
+  const [manualBookingModalVisible, setManualBookingModalVisible] = useState(false);
+  const [calendarTarget, setCalendarTarget] = useState<'checkIn' | 'checkOut' | null>(null);
+  const [manualGuestName, setManualGuestName] = useState('');
+  const [manualGuestPhone, setManualGuestPhone] = useState('');
+  const [manualGuestEmail, setManualGuestEmail] = useState('');
+  const [manualCheckIn, setManualCheckIn] = useState('');
+  const [manualCheckOut, setManualCheckOut] = useState('');
+  const [manualGuestsCount, setManualGuestsCount] = useState('2');
+  const [manualNights, setManualNights] = useState('1');
+  const [manualTotalAmount, setManualTotalAmount] = useState('0');
+  const [manualStatus, setManualStatus] = useState<'CONFIRMED' | 'CHECKED_IN' | 'PENDING'>('CONFIRMED');
+  const [creatingManualBooking, setCreatingManualBooking] = useState(false);
 
   // Calcular rango de días para el mes visible
   const { days, currentMonthName } = useMemo(() => {
@@ -75,6 +91,71 @@ export const BoardPage: React.FC = () => {
   useEffect(() => {
     loadBoardData();
   }, [selectedMonthOffset]);
+
+  // Abrir Modal para crear una reserva presencial / manual rápida
+  const [targetRoomForBooking, setTargetRoomForBooking] = useState<Room | null>(null);
+
+  const handleOpenManualBooking = (room: Room, dateStr: string) => {
+    setTargetRoomForBooking(room);
+    setManualCheckIn(dateStr);
+
+    // Calcular checkout por defecto (+1 día)
+    const nextDay = new Date(dateStr + 'T00:00:00');
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextDateStr = nextDay.toISOString().split('T')[0];
+    setManualCheckOut(nextDateStr);
+
+    setManualGuestName('');
+    setManualGuestPhone('');
+    setManualGuestEmail('');
+    setManualGuestsCount(String(Math.min(2, room.capacity || 2)));
+    setManualNights('1');
+    setManualTotalAmount(String(room.pricePerNight));
+    setManualStatus('CONFIRMED');
+    setManualBookingModalVisible(true);
+  };
+
+  const handleNightsChange = (nightsStr: string) => {
+    setManualNights(nightsStr);
+    const n = parseInt(nightsStr, 10) || 1;
+    if (manualCheckIn && targetRoomForBooking) {
+      const d = new Date(manualCheckIn + 'T00:00:00');
+      d.setDate(d.getDate() + n);
+      setManualCheckOut(d.toISOString().split('T')[0]);
+      setManualTotalAmount(String(n * targetRoomForBooking.pricePerNight));
+    }
+  };
+
+  const handleSaveManualBooking = async () => {
+    if (!manualGuestName.trim() || !manualCheckIn || !manualCheckOut || !targetRoomForBooking) {
+      Alert.alert('Campos Incompletos', 'Por favor ingresa el nombre del huésped y las fechas.');
+      return;
+    }
+
+    setCreatingManualBooking(true);
+
+    const payload: BookingPayload = {
+      roomId: targetRoomForBooking.id,
+      guestName: manualGuestName.trim(),
+      guestEmail: manualGuestEmail.trim() || `${manualGuestName.toLowerCase().replace(/\s+/g, '')}@presencial.aura`,
+      checkInDate: manualCheckIn,
+      checkOutDate: manualCheckOut,
+      guestsCount: parseInt(manualGuestsCount, 10) || 2,
+      totalAmount: parseFloat(manualTotalAmount) || targetRoomForBooking.pricePerNight,
+      status: manualStatus,
+    };
+
+    const res = await roomsApi.createBooking(payload);
+    setCreatingManualBooking(false);
+
+    if (res.success) {
+      Alert.alert('Reserva Creada', `Reserva #${res.booking?.bookingId} registrada con éxito.`);
+      setManualBookingModalVisible(false);
+      loadBoardData();
+    } else {
+      Alert.alert('Error al reservar', res.error || 'No se pudo registrar la reserva.');
+    }
+  };
 
   // Manejar cambio de estado de mantenimiento
   const handleToggleMaintenance = async (room: Room) => {
@@ -356,18 +437,20 @@ export const BoardPage: React.FC = () => {
                           <TouchableOpacity
                             key={d.dateStr}
                             style={{ width: CELL_WIDTH, height: ROW_HEIGHT }}
-                            className="border-r border-slate-200/50 justify-center items-center"
+                            className="border-r border-slate-200/50 justify-center items-center active:bg-emerald-100/40"
                             onPress={() => {
-                              setSelectedCellInfo({
-                                room,
-                                date: d.dateStr,
-                                dayFormatted: `${d.dayOfWeek} ${d.dayNumber} de ${currentMonthName}`,
-                                status: room.isUnderMaintenance
-                                  ? 'MAINTENANCE'
-                                  : !room.isAvailable
-                                  ? 'INACTIVE'
-                                  : 'AVAILABLE',
-                              });
+                              if (room.isUnderMaintenance || !room.isAvailable) {
+                                setSelectedCellInfo({
+                                  room,
+                                  date: d.dateStr,
+                                  dayFormatted: `${d.dayOfWeek} ${d.dayNumber} de ${currentMonthName}`,
+                                  status: room.isUnderMaintenance
+                                    ? 'MAINTENANCE'
+                                    : 'INACTIVE',
+                                });
+                              } else {
+                                handleOpenManualBooking(room, d.dateStr);
+                              }
                             }}
                           >
                             {room.isUnderMaintenance ? (
@@ -378,7 +461,11 @@ export const BoardPage: React.FC = () => {
                               <View className="w-full h-full bg-slate-300/40 justify-center items-center">
                                 <Ionicons name="ban-outline" size={13} color="#94A3B8" />
                               </View>
-                            ) : null}
+                            ) : (
+                              <View className="w-full h-full justify-center items-center">
+                                <Ionicons name="add" size={14} color="#CBD5E1" />
+                              </View>
+                            )}
                           </TouchableOpacity>
                         ))}
                       </View>
@@ -637,6 +724,266 @@ export const BoardPage: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {/* MODAL DE RESERVA MANUAL / PRESENCIAL RÁPIDA */}
+      <Modal
+        visible={manualBookingModalVisible}
+        transparent
+        animationType="slide"
+      >
+        <View className="flex-1 bg-slate-900/60 justify-end">
+          <View className="bg-white rounded-t-3xl max-h-[92%] overflow-hidden border-t border-slate-200">
+            {/* Header del Modal */}
+            <View className="flex-row justify-between items-center px-6 py-4 border-b border-slate-100">
+              <View>
+                <Text className="text-[11px] text-[#488C8C] font-bold uppercase tracking-wider">
+                  Recepción · Reserva Presencial
+                </Text>
+                <Text className="text-[18px] font-black text-slate-900">
+                  Habitación {targetRoomForBooking ? formatRoomNumber(targetRoomForBooking.roomNumber) : ''} ({targetRoomForBooking?.type})
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                className="w-9 h-9 rounded-full bg-slate-100 justify-center items-center active:bg-slate-200"
+                onPress={() => setManualBookingModalVisible(false)}
+              >
+                <Ionicons name="close" size={20} color="#475569" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView className="px-5 pt-3" showsVerticalScrollIndicator={false}>
+              <View className="space-y-2.5 pb-8">
+                {/* Nombre del Huésped */}
+                <FloatingLabelInput
+                  label="Nombre Completo del Huésped *"
+                  iconName="person-outline"
+                  value={manualGuestName}
+                  onChangeText={setManualGuestName}
+                />
+
+                {/* Teléfono / Contacto */}
+                <FloatingLabelInput
+                  label="Teléfono / Celular (Opcional)"
+                  iconName="call-outline"
+                  keyboardType="phone-pad"
+                  value={manualGuestPhone}
+                  onChangeText={setManualGuestPhone}
+                />
+
+                {/* Correo Electrónico */}
+                <FloatingLabelInput
+                  label="Email (Opcional)"
+                  iconName="mail-outline"
+                  keyboardType="email-address"
+                  value={manualGuestEmail}
+                  onChangeText={setManualGuestEmail}
+                />
+
+                {/* Fechas: CheckIn y CheckOut usando CalendarPickerModal */}
+                <View className="flex-row gap-2.5 my-1">
+                  <TouchableOpacity
+                    className="flex-1 bg-[#F1F5F9] border-[1.2px] border-[#CBD5E1] rounded-xl px-3.5 py-2 justify-center active:bg-slate-100"
+                    onPress={() => setCalendarTarget('checkIn')}
+                    activeOpacity={0.7}
+                  >
+                    <View className="flex-row items-center gap-1.5 mb-0.5">
+                      <Ionicons name="calendar-outline" size={13} color="#488C8C" />
+                      <Text className="text-[10.5px] font-bold text-slate-500 uppercase tracking-tight">
+                        Check-In *
+                      </Text>
+                    </View>
+                    <Text className="text-[14px] font-black text-slate-900">
+                      {manualCheckIn || 'Seleccionar'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className="flex-1 bg-[#F1F5F9] border-[1.2px] border-[#CBD5E1] rounded-xl px-3.5 py-2 justify-center active:bg-slate-100"
+                    onPress={() => setCalendarTarget('checkOut')}
+                    activeOpacity={0.7}
+                  >
+                    <View className="flex-row items-center gap-1.5 mb-0.5">
+                      <Ionicons name="calendar-outline" size={13} color="#488C8C" />
+                      <Text className="text-[10.5px] font-bold text-slate-500 uppercase tracking-tight">
+                        Check-Out *
+                      </Text>
+                    </View>
+                    <Text className="text-[14px] font-black text-slate-900">
+                      {manualCheckOut || 'Seleccionar'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Noches y Personas */}
+                <View className="flex-row gap-2.5">
+                  <View className="w-[45%]">
+                    <FloatingLabelInput
+                      label="Noches"
+                      iconName="time-outline"
+                      keyboardType="numeric"
+                      value={manualNights}
+                      onChangeText={handleNightsChange}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <FloatingLabelInput
+                      label="N° Huéspedes"
+                      iconName="people-outline"
+                      keyboardType="numeric"
+                      value={manualGuestsCount}
+                      onChangeText={setManualGuestsCount}
+                    />
+                  </View>
+                </View>
+
+                {/* Total Estadía */}
+                <FloatingLabelInput
+                  label="Monto Total a Cobrar (S/) *"
+                  iconName="pricetag-outline"
+                  keyboardType="numeric"
+                  value={manualTotalAmount}
+                  onChangeText={setManualTotalAmount}
+                />
+
+                {/* Selector de Estado Inicial */}
+                <View className="mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+                  <Text className="text-[11.5px] font-bold text-slate-600 mb-2">
+                    Estado de la Reserva:
+                  </Text>
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity
+                      className={`flex-1 py-2 items-center rounded-xl border ${
+                        manualStatus === 'CONFIRMED'
+                          ? 'bg-[#0A3B7B] border-[#0A3B7B]'
+                          : 'bg-white border-slate-200'
+                      }`}
+                      onPress={() => setManualStatus('CONFIRMED')}
+                    >
+                      <Text
+                        className={`text-[11px] font-black ${
+                          manualStatus === 'CONFIRMED' ? 'text-white' : 'text-slate-700'
+                        }`}
+                      >
+                        CONFIRMADA
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      className={`flex-1 py-2 items-center rounded-xl border ${
+                        manualStatus === 'CHECKED_IN'
+                          ? 'bg-[#488C8C] border-[#488C8C]'
+                          : 'bg-white border-slate-200'
+                      }`}
+                      onPress={() => setManualStatus('CHECKED_IN')}
+                    >
+                      <Text
+                        className={`text-[11px] font-black ${
+                          manualStatus === 'CHECKED_IN' ? 'text-white' : 'text-slate-700'
+                        }`}
+                      >
+                        EN ESTADÍA
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      className={`flex-1 py-2 items-center rounded-xl border ${
+                        manualStatus === 'PENDING'
+                          ? 'bg-[#F59E0B] border-[#F59E0B]'
+                          : 'bg-white border-slate-200'
+                      }`}
+                      onPress={() => setManualStatus('PENDING')}
+                    >
+                      <Text
+                        className={`text-[11px] font-black ${
+                          manualStatus === 'PENDING' ? 'text-white' : 'text-slate-700'
+                        }`}
+                      >
+                        PENDIENTE
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Botones con LuxuryButton */}
+                <View className="flex-row gap-3 pt-3">
+                  <View className="flex-1">
+                    <LuxuryButton
+                      title="Cancelar"
+                      variant="outline"
+                      onPress={() => setManualBookingModalVisible(false)}
+                      disabled={creatingManualBooking}
+                      style={{ width: '100%', marginTop: 0 }}
+                    />
+                  </View>
+                  <View className="flex-[1.5]">
+                    <LuxuryButton
+                      title="Registrar Reserva"
+                      variant="solid"
+                      iconName="checkmark-circle-outline"
+                      loading={creatingManualBooking}
+                      onPress={handleSaveManualBooking}
+                      style={{ width: '100%', marginTop: 0 }}
+                    />
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 1: CALENDARIO DE ENTRADA (CHECK-IN) */}
+      <CalendarPickerModal
+        visible={calendarTarget === 'checkIn'}
+        title="Fecha de Check-In"
+        selectedDate={manualCheckIn}
+        minDate={new Date().toISOString().split('T')[0]}
+        onSelect={(dateStr) => {
+          setManualCheckIn(dateStr);
+          // Si el checkout es menor o igual, ajustarlo a +1 día
+          if (!manualCheckOut || manualCheckOut <= dateStr) {
+            const nextDay = new Date(dateStr + 'T00:00:00');
+            nextDay.setDate(nextDay.getDate() + 1);
+            const nextStr = nextDay.toISOString().split('T')[0];
+            setManualCheckOut(nextStr);
+            if (targetRoomForBooking) {
+              setManualNights('1');
+              setManualTotalAmount(String(targetRoomForBooking.pricePerNight));
+            }
+          } else {
+            const d1 = new Date(dateStr + 'T00:00:00').getTime();
+            const d2 = new Date(manualCheckOut + 'T00:00:00').getTime();
+            const n = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
+            setManualNights(String(n));
+            if (targetRoomForBooking) {
+              setManualTotalAmount(String(n * targetRoomForBooking.pricePerNight));
+            }
+          }
+        }}
+        onClose={() => setCalendarTarget(null)}
+      />
+
+      {/* MODAL 2: CALENDARIO DE SALIDA (CHECK-OUT) */}
+      <CalendarPickerModal
+        visible={calendarTarget === 'checkOut'}
+        title="Fecha de Check-Out"
+        selectedDate={manualCheckOut}
+        minDate={manualCheckIn || new Date().toISOString().split('T')[0]}
+        onSelect={(dateStr) => {
+          setManualCheckOut(dateStr);
+          if (manualCheckIn) {
+            const d1 = new Date(manualCheckIn + 'T00:00:00').getTime();
+            const d2 = new Date(dateStr + 'T00:00:00').getTime();
+            const n = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
+            setManualNights(String(n));
+            if (targetRoomForBooking) {
+              setManualTotalAmount(String(n * targetRoomForBooking.pricePerNight));
+            }
+          }
+        }}
+        onClose={() => setCalendarTarget(null)}
+      />
     </View>
   );
 };
