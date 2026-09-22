@@ -118,57 +118,54 @@ export const BoardPage: React.FC = () => {
 
   return (
     <View className="flex-1 bg-slate-100">
-      {/* Top Bar: Selector de Mes y Leyenda */}
-      <View className="bg-white px-4 py-3 border-b border-slate-200">
+      {/* Top Bar Compacta: Título, Selector de Mes y Leyenda */}
+      <View className="bg-white px-3.5 py-2 border-b border-slate-200">
         <View className="flex-row justify-between items-center">
-          <View>
-            <Text className="text-[17px] font-black text-slate-900">
+          <View className="flex-1 mr-2">
+            <Text className="text-[15px] font-black text-slate-900" numberOfLines={1}>
               Tablero de Ocupación
-            </Text>
-            <Text className="text-[12px] text-slate-500 font-medium">
-              Matriz de Habitaciones y Calendario
             </Text>
           </View>
 
-          {/* Selector de Mes */}
-          <View className="flex-row items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+          {/* Selector de Mes Compacto */}
+          <View className="flex-row items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
             <TouchableOpacity
-              className="p-1.5 rounded-lg active:bg-white"
+              className="p-1 rounded active:bg-white"
               onPress={() => setSelectedMonthOffset((prev) => prev - 1)}
             >
-              <Ionicons name="chevron-back" size={18} color="#475569" />
+              <Ionicons name="chevron-back" size={15} color="#475569" />
             </TouchableOpacity>
 
-            <Text className="px-2.5 text-[12px] font-extrabold text-slate-800">
+            <Text className="px-2 text-[11px] font-extrabold text-slate-800">
               {currentMonthName}
             </Text>
 
             <TouchableOpacity
-              className="p-1.5 rounded-lg active:bg-white"
+              className="p-1 rounded active:bg-white"
               onPress={() => setSelectedMonthOffset((prev) => prev + 1)}
             >
-              <Ionicons name="chevron-forward" size={18} color="#475569" />
+              <Ionicons name="chevron-forward" size={15} color="#475569" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Leyenda de Estados */}
-        <View className="flex-row flex-wrap gap-2.5 mt-3 pt-2.5 border-t border-slate-100">
-          <View className="flex-row items-center gap-1.5">
-            <View className="w-3.5 h-3.5 rounded bg-emerald-500" />
-            <Text className="text-[11px] text-slate-600 font-semibold">Disponible</Text>
+        {/* Leyenda de Estados Compacta */}
+        <View className="flex-row items-center justify-between mt-1.5 pt-1.5 border-t border-slate-100">
+          <View className="flex-row items-center gap-1">
+            <View className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            <Text className="text-[10px] text-slate-600 font-semibold">Disponible</Text>
           </View>
-          <View className="flex-row items-center gap-1.5">
-            <View className="w-3.5 h-3.5 rounded bg-amber-500" />
-            <Text className="text-[11px] text-slate-600 font-semibold">Mantenimiento</Text>
+          <View className="flex-row items-center gap-1">
+            <View className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+            <Text className="text-[10px] text-slate-600 font-semibold">Mantenimiento</Text>
           </View>
-          <View className="flex-row items-center gap-1.5">
-            <View className="w-3.5 h-3.5 rounded bg-sky-500" />
-            <Text className="text-[11px] text-slate-600 font-semibold">Ocupada / Reserva</Text>
+          <View className="flex-row items-center gap-1">
+            <View className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+            <Text className="text-[10px] text-slate-600 font-semibold">Ocupada</Text>
           </View>
-          <View className="flex-row items-center gap-1.5">
-            <View className="w-3.5 h-3.5 rounded bg-slate-400" />
-            <Text className="text-[11px] text-slate-600 font-semibold">Inactiva</Text>
+          <View className="flex-row items-center gap-1">
+            <View className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+            <Text className="text-[10px] text-slate-600 font-semibold">Inactiva</Text>
           </View>
         </View>
       </View>
