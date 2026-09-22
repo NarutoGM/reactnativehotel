@@ -48,12 +48,12 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   // Interpolaciones para posición, tamaño de fuente y color dentro del input
   const labelTop = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [15, 5], // Permanece dentro del contenedor compacto
+    outputRange: [12, 3], // Permanece dentro del contenedor compacto
   });
 
   const labelFontSize = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [13.5, 10.5],
+    outputRange: [13, 10],
   });
 
   const labelColor = animatedValue.interpolate({
@@ -61,7 +61,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
     outputRange: ['#64748B', isFocused ? '#488C8C' : '#64748B'],
   });
 
-  const inputPaddingLeft = iconName ? 38 : 14;
+  const inputPaddingLeft = iconName ? 36 : 14;
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -144,10 +144,10 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginVertical: 4,
+    marginVertical: 3,
   },
   container: {
-    height: 50,
+    height: 44,
     backgroundColor: '#F1F5F9', // Gris plomito elegante y definido
     borderRadius: 12,
     borderWidth: 1.2,
@@ -177,30 +177,30 @@ const styles = StyleSheet.create({
   },
   textInput: {
     height: '100%',
-    paddingTop: 15,
+    paddingTop: 12,
     paddingBottom: 2,
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#0F172A',
     fontWeight: '600',
     fontFamily: 'Sora_600SemiBold',
   },
   leftIconContainer: {
     position: 'absolute',
-    left: 12,
-    top: 15,
+    left: 11,
+    top: 13,
     zIndex: 2,
   },
   eyeButton: {
     position: 'absolute',
     right: 10,
-    top: 13,
+    top: 10,
     padding: 4,
     zIndex: 2,
   },
   errorText: {
     color: '#EF4444',
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: 11.5,
+    marginTop: 3,
     marginLeft: 4,
     fontWeight: '600',
   },
