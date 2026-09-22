@@ -32,8 +32,8 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       <View className="flex-1 bg-slate-900/65 justify-center items-center p-5">
         <View className="bg-white rounded-[24px] p-6 w-full max-w-[360px] items-center shadow-2xl elevation-10 border border-slate-100">
           {/* Icon Circle */}
-          <View className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 justify-center items-center mb-3.5">
-            <Ionicons name={iconName} size={34} color="#16A34A" />
+          <View className="w-16 h-16 rounded-full bg-[#EBF4F4] border border-[#D1E7E7] justify-center items-center mb-3.5">
+            <Ionicons name={iconName} size={34} color="#488C8C" />
           </View>
 
           {/* Title */}

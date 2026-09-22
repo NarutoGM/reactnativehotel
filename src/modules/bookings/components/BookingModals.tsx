@@ -121,8 +121,8 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
       <Modal visible={!!bookingSuccessModal} transparent animationType="fade" onRequestClose={onCloseSuccess}>
         <View className="flex-1 bg-slate-900/65 justify-center items-center p-5">
           <View className="bg-white rounded-[22px] p-6 w-full max-w-[360px] items-center shadow-2xl elevation-8">
-            <View className="w-15 h-15 rounded-full bg-emerald-50 justify-center items-center mb-3">
-              <Ionicons name="checkmark-done" size={32} color="#16A34A" />
+            <View className="w-15 h-15 rounded-full bg-[#EBF4F4] justify-center items-center mb-3">
+              <Ionicons name="checkmark-done" size={32} color="#488C8C" />
             </View>
             <Text className="text-slate-900 text-[20px] font-black">¡Reserva Registrada!</Text>
             <Text className="text-slate-500 text-[13px] text-center mt-1.5 leading-4.5">
@@ -134,7 +134,7 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
               <Text className="text-slate-900 text-[22px] font-black tracking-widest my-1">
                 {bookingSuccessModal?.bookingId}
               </Text>
-              <Text className="text-emerald-600 font-extrabold text-[15px]">
+              <Text className="text-[#488C8C] font-extrabold text-[15px]">
                 Total: S/ {bookingSuccessModal?.totalAmount}
               </Text>
             </View>
