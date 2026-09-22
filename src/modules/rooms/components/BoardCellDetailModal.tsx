@@ -258,33 +258,42 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
                         </Text>
                       </View>
 
-                      {/* Sección de Comprobante / Voucher de Pago */}
-                      <View className="pt-1.5 pb-0.5">
-                        <Text className="text-[11px] font-bold text-slate-500 uppercase tracking-tight mb-1">
+                      {/* Sección de Comprobante / Voucher de Pago con Miniatura Integrada */}
+                      <View className="pt-2 pb-1">
+                        <Text className="text-[11.5px] font-bold text-slate-500 uppercase tracking-tight mb-1.5">
                           Comprobante de Pago:
                         </Text>
                         {vouchersList.length > 0 ? (
-                          <View className="flex-row gap-2 flex-wrap">
+                          <View className="flex-row gap-2.5">
                             {vouchersList.map((uri, idx) => (
                               <TouchableOpacity
                                 key={idx}
-                                activeOpacity={0.8}
+                                activeOpacity={0.85}
                                 onPress={() => setPreviewVoucherUri(uri)}
-                                className="flex-row items-center bg-[#EBF4F4] border border-[#CDE5E5] px-3 py-1.5 rounded-xl gap-1.5"
+                                className="relative rounded-xl overflow-hidden border border-slate-300 shadow-sm bg-slate-900"
+                                style={{ width: vouchersList.length > 1 ? 110 : 140, height: 95 }}
                               >
-                                <Ionicons name="receipt-outline" size={14} color="#488C8C" />
-                                <Text className="text-[11.5px] font-bold text-[#2E6666]">
-                                  Ver Voucher {vouchersList.length > 1 ? `#${idx + 1}` : ''}
-                                </Text>
-                                <Ionicons name="eye-outline" size={13} color="#488C8C" />
+                                <Image
+                                  source={{ uri }}
+                                  className="w-full h-full"
+                                  resizeMode="cover"
+                                />
+                                <View className="absolute inset-0 bg-black/20 justify-end p-1.5">
+                                  <View className="bg-black/60 px-2 py-0.5 rounded-md self-start flex-row items-center gap-1">
+                                    <Ionicons name="expand-outline" size={11} color="#FFFFFF" />
+                                    <Text className="text-[9.5px] font-bold text-white">
+                                      {vouchersList.length > 1 ? `Voucher ${idx + 1}` : 'Ampliar'}
+                                    </Text>
+                                  </View>
+                                </View>
                               </TouchableOpacity>
                             ))}
                           </View>
                         ) : (
-                          <View className="flex-row items-center gap-1.5 bg-slate-100/80 px-2.5 py-1.5 rounded-xl border border-slate-200">
-                            <Ionicons name="alert-circle-outline" size={14} color="#94A3B8" />
-                            <Text className="text-[11.5px] text-slate-500 font-medium">
-                              Sin voucher adjunto (Reserva presencial o pendiente)
+                          <View className="flex-row items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                            <Ionicons name="alert-circle-outline" size={15} color="#94A3B8" />
+                            <Text className="text-[11.5px] text-slate-500 font-medium flex-1">
+                              Sin comprobante adjunto (Reserva presencial o pendiente)
                             </Text>
                           </View>
                         )}
@@ -367,42 +376,6 @@ export const BoardCellDetailModal: React.FC<BoardCellDetailModalProps> = ({
               )}
             </View>
           </ScrollView>
-
-          {/* Acciones con LuxuryButton */}
-          {!isEditingBooking && (
-            <View className="pt-3 border-t border-slate-100 flex-row gap-2">
-              <View className="flex-1">
-                <LuxuryButton
-                  title="Cerrar"
-                  variant="outline"
-                  onPress={onClose}
-                  style={{ width: '100%', marginTop: 0 }}
-                />
-              </View>
-              <View className="flex-[1.4]">
-                <LuxuryButton
-                  title={
-                    cellInfo.room.isUnderMaintenance
-                      ? 'Quitar Mantenimiento'
-                      : 'Mantenimiento'
-                  }
-                  variant={cellInfo.room.isUnderMaintenance ? 'outline' : 'solid'}
-                  iconName="construct-outline"
-                  loading={actionLoading}
-                  onPress={() => onToggleMaintenance(cellInfo.room)}
-                  style={{
-                    width: '100%',
-                    marginTop: 0,
-                    backgroundColor: cellInfo.room.isUnderMaintenance ? '#FEF3C7' : '#488C8C',
-                    borderColor: cellInfo.room.isUnderMaintenance ? '#F59E0B' : '#488C8C',
-                  }}
-                  textStyle={{
-                    color: cellInfo.room.isUnderMaintenance ? '#92400E' : '#FFFFFF',
-                  }}
-                />
-              </View>
-            </View>
-          )}
         </View>
       </View>
 
