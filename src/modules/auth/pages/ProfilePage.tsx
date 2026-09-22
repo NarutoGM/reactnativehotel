@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { User, authApi } from '../../auth/api/auth.api';
 import { SuccessModal } from '@/components/SuccessModal';
 
@@ -28,17 +29,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const handlePickAvatar = async () => {
     try {
-      let ImagePicker: any;
-      try {
-        ImagePicker = await import('expo-image-picker');
-      } catch (err) {
-        Alert.alert(
-          'Módulo de Galería',
-          'El módulo nativo se está vinculando. Si estás en emulador, reinicia con expo run:android.'
-        );
-        return;
-      }
-
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permiso Denegado', 'Se requiere acceso a la galería para cambiar tu foto de perfil.');
@@ -46,7 +36,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'] as any,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.85,

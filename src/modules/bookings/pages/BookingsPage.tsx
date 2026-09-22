@@ -9,6 +9,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { User } from '@/modules/auth/api/auth.api';
 import { bookingsApi, Booking } from '../api/bookings.api';
@@ -16,6 +17,7 @@ import { Room } from '@/modules/rooms/api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
 import { RoomDetailModal } from '@/modules/rooms/components/RoomDetailModal';
 import { SuccessModal } from '@/components/SuccessModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface BookingsPageProps {
   currentUser: User;
@@ -40,6 +42,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [uploadSuccessInfo, setUploadSuccessInfo] = useState<{ bookingCode: string } | null>(null);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [deleteVoucherTarget, setDeleteVoucherTarget] = useState<{ bookingId: string; index: number } | null>(null);
+  const [deletingVoucher, setDeletingVoucher] = useState(false);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -78,17 +82,6 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
 
   const handlePickAndUploadVoucher = async (booking: Booking) => {
     try {
-      let ImagePicker: any;
-      try {
-        ImagePicker = await import('expo-image-picker');
-      } catch (err) {
-        Alert.alert(
-          'Módulo de Galería',
-          'El módulo nativo se está vinculando. Si estás en emulador, reinicia con expo run:android.'
-        );
-        return;
-      }
-
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permiso Denegado', 'Necesitamos acceso a la galería para seleccionar la captura del comprobante.');
@@ -99,7 +92,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
       const remainingLimit = Math.max(1, 2 - currentVouchers.length);
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'] as any,
         allowsMultipleSelection: remainingLimit > 1,
         selectionLimit: remainingLimit,
         quality: 0.8,
@@ -122,26 +115,17 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     }
   };
 
-  const handleDeleteVoucher = (bookingId: string, index: number) => {
-    Alert.alert(
-      'Eliminar Comprobante',
-      '¿Deseas quitar esta captura de comprobante?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            const res = await bookingsApi.deleteVoucher(bookingId, index);
-            if (res.success) {
-              loadBookings();
-            } else {
-              Alert.alert('Error', res.error || 'No se pudo eliminar el comprobante.');
-            }
-          },
-        },
-      ]
-    );
+  const handleConfirmDeleteVoucher = async () => {
+    if (!deleteVoucherTarget) return;
+    setDeletingVoucher(true);
+    const res = await bookingsApi.deleteVoucher(deleteVoucherTarget.bookingId, deleteVoucherTarget.index);
+    setDeletingVoucher(false);
+    setDeleteVoucherTarget(null);
+    if (res.success) {
+      loadBookings();
+    } else {
+      Alert.alert('Error', res.error || 'No se pudo eliminar el comprobante.');
+    }
   };
 
   const handleSubmitVouchers = async (booking: Booking) => {
@@ -277,6 +261,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                         ? 'bg-emerald-100'
                         : b.status === 'CHECKED_IN'
                         ? 'bg-sky-100'
+                        : b.status === 'PENDING' && b.voucherSubmitted
+                        ? 'bg-[#EBF4F4]'
                         : b.status === 'PENDING'
                         ? 'bg-orange-100'
                         : b.status === 'CANCELLED' || b.status === 'REJECTED'
@@ -290,6 +276,8 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                           ? 'text-emerald-700'
                           : b.status === 'CHECKED_IN'
                           ? 'text-sky-700'
+                          : b.status === 'PENDING' && b.voucherSubmitted
+                          ? 'text-[#2D5A5A]'
                           : b.status === 'PENDING'
                           ? 'text-orange-700'
                           : b.status === 'CANCELLED' || b.status === 'REJECTED'
@@ -297,7 +285,9 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                           : 'text-slate-700'
                       }`}
                     >
-                      {b.status === 'PENDING'
+                      {b.status === 'PENDING' && b.voucherSubmitted
+                        ? 'EN VALIDACIÓN'
+                        : b.status === 'PENDING'
                         ? 'PENDIENTE DE VOUCHER'
                         : b.status === 'CONFIRMED'
                         ? 'CONFIRMADA'
@@ -440,7 +430,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                           {!b.voucherSubmitted && isPending && (
                             <TouchableOpacity
                               className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 justify-center items-center shadow-sm z-10"
-                              onPress={() => handleDeleteVoucher(b.id, idx)}
+                              onPress={() => setDeleteVoucherTarget({ bookingId: b.id, index: idx })}
                               activeOpacity={0.7}
                             >
                               <Ionicons name="close" size={13} color="#FFFFFF" />
@@ -539,6 +529,20 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         badgeText={uploadSuccessInfo ? `Código: ${uploadSuccessInfo.bookingCode}` : undefined}
         buttonText="Entendido"
         onClose={() => setUploadSuccessInfo(null)}
+      />
+
+      {/* Modal Personalizado de Confirmación para Eliminar Comprobante */}
+      <ConfirmModal
+        visible={!!deleteVoucherTarget}
+        title="Eliminar Comprobante"
+        message="¿Estás seguro de que deseas quitar esta captura de comprobante?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="brand"
+        iconName="trash-outline"
+        loading={deletingVoucher}
+        onConfirm={handleConfirmDeleteVoucher}
+        onCancel={() => setDeleteVoucherTarget(null)}
       />
     </View>
   );
