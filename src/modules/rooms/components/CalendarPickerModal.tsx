@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface CalendarPickerModalProps {
@@ -67,18 +67,18 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-slate-900/45 justify-center items-center p-4">
           <TouchableWithoutFeedback>
-            <View style={styles.modalCard}>
+            <View className="w-full max-w-[340px] bg-white rounded-3xl p-5 shadow-2xl elevation-10 border border-slate-200">
               {/* Header Title */}
-              <View style={styles.headerRow}>
+              <View className="flex-row justify-between items-center pb-2.5 border-b border-slate-100">
                 <View>
-                  <Text style={styles.badgeStep}>CALENDARIO</Text>
-                  <Text style={styles.titleText}>{title}</Text>
+                  <Text className="text-[9.5px] font-extrabold text-slate-500 tracking-wider">CALENDARIO</Text>
+                  <Text className="text-[17px] font-black text-slate-900 mt-0.5">{title}</Text>
                 </View>
 
                 <TouchableOpacity
-                  style={styles.closeBtn}
+                  className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
                   onPress={onClose}
                   activeOpacity={0.7}
                 >
@@ -87,21 +87,21 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
               </View>
 
               {/* Month Navigation */}
-              <View style={styles.monthNav}>
+              <View className="flex-row justify-between items-center my-3 px-1">
                 <TouchableOpacity
-                  style={styles.navArrow}
+                  className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
                   onPress={handlePrevMonth}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="chevron-back" size={18} color="#0F172A" />
                 </TouchableOpacity>
 
-                <Text style={styles.monthTitle}>
+                <Text className="text-[15px] font-extrabold text-slate-900">
                   {MONTH_NAMES[currentMonth]} {currentYear}
                 </Text>
 
                 <TouchableOpacity
-                  style={styles.navArrow}
+                  className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
                   onPress={handleNextMonth}
                   activeOpacity={0.7}
                 >
@@ -110,19 +110,19 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
               </View>
 
               {/* Days Header */}
-              <View style={styles.daysHeaderRow}>
+              <View className="flex-row justify-between mb-1.5">
                 {DAYS_HEADER.map((d, idx) => (
-                  <Text key={idx} style={styles.dayHeaderCell}>
+                  <Text key={idx} className="w-9 text-center text-[11px] font-bold text-slate-400">
                     {d}
                   </Text>
                 ))}
               </View>
 
               {/* Days Grid */}
-              <View style={styles.daysGrid}>
+              <View className="flex-row flex-wrap justify-between">
                 {days.map((item, idx) => {
                   if (!item.day) {
-                    return <View key={idx} style={styles.emptyDayCell} />;
+                    return <View key={idx} className="w-9 h-9 my-0.5" />;
                   }
 
                   const isSelected = item.dateStr === selectedDate;
@@ -132,11 +132,9 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
                     <TouchableOpacity
                       key={idx}
                       disabled={isPast}
-                      style={[
-                        styles.dayCell,
-                        isSelected && styles.dayCellSelected,
-                        isPast && styles.dayCellPast,
-                      ]}
+                      className={`w-9 h-9 my-0.5 rounded-xl justify-center items-center ${
+                        isSelected ? 'bg-slate-900 shadow-sm elevation-2' : ''
+                      } ${isPast ? 'opacity-25' : ''}`}
                       onPress={() => {
                         onSelect(item.dateStr);
                         onClose();
@@ -144,11 +142,13 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
                       activeOpacity={0.7}
                     >
                       <Text
-                        style={[
-                          styles.dayCellText,
-                          isSelected && styles.dayCellTextSelected,
-                          isPast && styles.dayCellTextPast,
-                        ]}
+                        className={`text-[13px] ${
+                          isSelected
+                            ? 'text-white font-black'
+                            : isPast
+                            ? 'text-slate-400 font-semibold'
+                            : 'text-slate-900 font-bold'
+                        }`}
                       >
                         {item.day}
                       </Text>
@@ -163,153 +163,3 @@ export const CalendarPickerModal: React.FC<CalendarPickerModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 340,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 20,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  badgeStep: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#64748B',
-    letterSpacing: 0.8,
-  },
-  titleText: {
-    fontSize: 17,
-    fontWeight: '900',
-    fontFamily: 'Sora_800ExtraBold',
-    color: '#0F172A',
-    marginTop: 1,
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  monthNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 12,
-    paddingHorizontal: 4,
-  },
-  navArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  monthTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#0F172A',
-  },
-  daysHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  dayHeaderCell: {
-    width: 36,
-    textAlign: 'center',
-    fontSize: 11,
-    fontWeight: '700',
-    fontFamily: 'Sora_600SemiBold',
-    color: '#94A3B8',
-  },
-  daysGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  emptyDayCell: {
-    width: 36,
-    height: 36,
-    marginVertical: 2,
-  },
-  dayCell: {
-    width: 36,
-    height: 36,
-    marginVertical: 2,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayCellSelected: {
-    backgroundColor: '#0F172A',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  dayCellPast: {
-    opacity: 0.25,
-  },
-  dayCellText: {
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'Sora_600SemiBold',
-    color: '#0F172A',
-  },
-  dayCellTextSelected: {
-    color: '#FFFFFF',
-    fontFamily: 'Sora_800ExtraBold',
-  },
-  dayCellTextPast: {
-    color: '#94A3B8',
-  },
-  footerRow: {
-    marginTop: 14,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerLabel: {
-    fontSize: 11.5,
-    fontFamily: 'Sora_400Regular',
-    color: '#64748B',
-  },
-  footerVal: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#0F172A',
-  },
-});

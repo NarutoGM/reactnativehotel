@@ -7,7 +7,6 @@ import {
   Modal,
   ScrollView,
   Dimensions,
-  StyleSheet,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,275 +41,133 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       statusBarTranslucent
     >
       {room ? (
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-slate-900/65 justify-end">
           <TouchableWithoutFeedback onPress={onClose}>
-            <View style={styles.backdropTouch} />
+            <View className="flex-1" />
           </TouchableWithoutFeedback>
 
-        <View style={styles.sheetContainer}>
-          {/* Botón flotante de Cerrar arriba a la derecha */}
-          <TouchableOpacity
-            style={styles.floatingCloseBtn}
-            onPress={onClose}
-            activeOpacity={0.8}
+          <View
+            className="bg-white rounded-t-[28px] overflow-hidden border-t border-slate-200 shadow-2xl elevation-20"
+            style={{ maxHeight: screenHeight * 0.88 }}
           >
-            <Ionicons name="close" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+            {/* Botón flotante de Cerrar */}
+            <TouchableOpacity
+              className="absolute top-3.5 right-3.5 bg-slate-900/75 w-9 h-9 rounded-full justify-center items-center z-50 elevation-10"
+              onPress={onClose}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {/* Header Image & Badge dentro del scroll */}
-            <View style={styles.imageWrapper}>
-              <Image
-                source={{ uri: room.imageUrl || defaultImage }}
-                style={styles.roomImage}
-                resizeMode="cover"
-              />
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 16 }}
+            >
+              {/* Header Image & Badge */}
+              <View className="relative w-full h-[220px] bg-slate-900">
+                <Image
+                  source={{ uri: room.imageUrl || defaultImage }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
 
-              <View style={styles.badgeRoomNumber}>
-                <Text style={styles.badgeRoomText}>
-                  Habitación {formatRoomNumber(room.roomNumber)}
+                <View className="absolute bottom-3 left-4 bg-slate-900/85 px-3 py-1.5 rounded-lg">
+                  <Text className="text-white text-[12px] font-extrabold">
+                    Habitación {formatRoomNumber(room.roomNumber)}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="p-5">
+                {/* Title, Subtitle, Price & Rating */}
+                <View className="flex-row justify-between items-start mb-4">
+                  <View className="flex-1 pr-2">
+                    <Text className="text-[20px] font-black text-slate-900">{room.title}</Text>
+                    <Text className="text-slate-500 text-[13px] font-semibold mt-0.5">
+                      Tipo: {room.type} · Piso {room.floor}
+                    </Text>
+                    <Text className="text-slate-900 text-[18px] font-black mt-1.5">
+                      S/ {room.pricePerNight} <Text className="text-slate-400 text-[11px] font-normal">/noche</Text>
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-1 mt-0.5">
+                    <Ionicons name="star" size={15} color="#D97706" />
+                    <Text className="text-amber-600 font-bold text-[14px]">
+                      {room.rating || 4.8}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Specifications & Amenities */}
+                <Text className="text-slate-900 text-[15px] font-black mb-3">
+                  Especificaciones y Servicios
                 </Text>
-              </View>
-            </View>
 
-            <View style={styles.bodyContent}>
-              {/* Title, Subtitle, Price & Rating */}
-              <View style={styles.headerRow}>
-                <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={styles.titleText}>{room.title}</Text>
-                  <Text style={styles.subtitleText}>
-                    Tipo: {room.type} · Piso {room.floor}
-                  </Text>
-                  <Text style={styles.priceText}>
-                    S/ {room.pricePerNight} <Text style={styles.pricePeriod}>/noche</Text>
-                  </Text>
-                </View>
-                <View style={styles.ratingRow}>
-                  <Ionicons name="star" size={15} color="#D97706" />
-                  <Text style={styles.ratingText}>
-                    {room.rating || 4.8}
-                  </Text>
-                </View>
-              </View>
+                <View className="mb-2">
+                  <View className="flex-row items-center py-2.5">
+                    <Ionicons name="people" size={18} color="#488C8C" />
+                    <Text className="text-slate-700 text-[13.5px] font-medium ml-3">
+                      Capacidad: <Text className="font-extrabold text-slate-900">Hasta {room.capacity} personas</Text>
+                    </Text>
+                  </View>
 
-              {/* Specifications & Amenities */}
-              <Text style={styles.sectionTitle}>
-                Especificaciones y Servicios
-              </Text>
+                  <View className="flex-row items-center py-2.5">
+                    <Ionicons name="bed" size={18} color="#488C8C" />
+                    <Text className="text-slate-700 text-[13.5px] font-medium ml-3">
+                      Distribución: <Text className="font-extrabold text-slate-900">{room.bedType}</Text>
+                    </Text>
+                  </View>
 
-              <View style={styles.specsList}>
-                <View style={styles.specItem}>
-                  <Ionicons name="people" size={18} color="#488C8C" />
-                  <Text style={styles.specText}>
-                    Capacidad: <Text style={styles.specBold}>Hasta {room.capacity} personas</Text>
-                  </Text>
-                </View>
+                  <View className="flex-row items-center py-2.5">
+                    <Ionicons name="expand" size={18} color="#488C8C" />
+                    <Text className="text-slate-700 text-[13.5px] font-medium ml-3">
+                      Dimensiones: <Text className="font-extrabold text-slate-900">{room.surfaceAreaM2} m²</Text>
+                    </Text>
+                  </View>
 
-                <View style={styles.specItem}>
-                  <Ionicons name="bed" size={18} color="#488C8C" />
-                  <Text style={styles.specText}>
-                    Distribución: <Text style={styles.specBold}>{room.bedType}</Text>
-                  </Text>
-                </View>
+                  <View className="flex-row items-center py-2.5">
+                    <Ionicons name="wifi" size={18} color="#488C8C" />
+                    <Text className="text-slate-700 text-[13.5px] font-medium ml-3">
+                      Conexión: <Text className="font-extrabold text-slate-900">Wi-Fi de Alta Velocidad</Text>
+                    </Text>
+                  </View>
 
-                <View style={styles.specItem}>
-                  <Ionicons name="expand" size={18} color="#488C8C" />
-                  <Text style={styles.specText}>
-                    Dimensiones: <Text style={styles.specBold}>{room.surfaceAreaM2} m²</Text>
-                  </Text>
-                </View>
-
-                <View style={styles.specItem}>
-                  <Ionicons name="wifi" size={18} color="#488C8C" />
-                  <Text style={styles.specText}>
-                    Conexión: <Text style={styles.specBold}>Wi-Fi de Alta Velocidad</Text>
-                  </Text>
-                </View>
-
-                <View style={styles.specItem}>
-                  <Ionicons name="shield-checkmark" size={18} color="#488C8C" />
-                  <Text style={styles.specText}>
-                    Seguridad: <Text style={styles.specBold}>Caja fuerte y cerradura digital</Text>
-                  </Text>
+                  <View className="flex-row items-center py-2.5">
+                    <Ionicons name="shield-checkmark" size={18} color="#488C8C" />
+                    <Text className="text-slate-700 text-[13.5px] font-medium ml-3">
+                      Seguridad: <Text className="font-extrabold text-slate-900">Caja fuerte y cerradura digital</Text>
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
 
-          {/* Barra inferior fija */}
-          <View style={styles.bottomBar}>
-            <View style={{ flex: 1 }}>
-              <LuxuryButton
-                title="Cerrar"
-                variant={showBookButton && onBook ? "outline" : "solid"}
-                onPress={onClose}
-              />
-            </View>
-
-            {showBookButton && onBook && (
-              <View style={{ flex: 2 }}>
+            {/* Barra inferior fija */}
+            <View className="px-5 py-3.5 bg-white border-t border-slate-100 flex-row gap-3 shadow-md elevation-8">
+              <View className="flex-1">
                 <LuxuryButton
-                  title="Reservar Habitación"
-                  variant="solid"
-                  onPress={() => {
-                    onClose();
-                    onBook(room);
-                  }}
+                  title="Cerrar"
+                  variant={showBookButton && onBook ? "outline" : "solid"}
+                  onPress={onClose}
                 />
               </View>
-            )}
+
+              {showBookButton && onBook && (
+                <View className="flex-[2]">
+                  <LuxuryButton
+                    title="Reservar Habitación"
+                    variant="solid"
+                    onPress={() => {
+                      onClose();
+                      onBook(room);
+                    }}
+                  />
+                </View>
+              )}
+            </View>
           </View>
         </View>
-      </View>
-    ) : null}
-  </Modal>
+      ) : null}
+    </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'flex-end',
-  },
-  backdropTouch: {
-    flex: 1,
-  },
-  sheetContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: screenHeight * 0.88,
-    overflow: 'hidden',
-    borderTopWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 20,
-  },
-  floatingCloseBtn: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 50,
-    elevation: 10,
-  },
-  scrollContent: {
-    paddingBottom: 16,
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: '100%',
-    height: 220,
-    backgroundColor: '#0F172A',
-  },
-  roomImage: {
-    width: '100%',
-    height: '100%',
-  },
-  badgeRoomNumber: {
-    position: 'absolute',
-    bottom: 12,
-    left: 16,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  badgeRoomText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  bodyContent: {
-    padding: 20,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#0F172A',
-  },
-  subtitleText: {
-    color: '#64748B',
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  priceText: {
-    color: '#0F172A',
-    fontSize: 18,
-    fontWeight: '900',
-    marginTop: 6,
-  },
-  pricePeriod: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '400',
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  ratingText: {
-    color: '#D97706',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  sectionTitle: {
-    color: '#0F172A',
-    fontSize: 15,
-    fontWeight: '900',
-    marginBottom: 12,
-  },
-  specsList: {
-    marginBottom: 8,
-  },
-  specItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 9,
-  },
-  specText: {
-    color: '#334155',
-    fontSize: 13.5,
-    fontWeight: '500',
-    marginLeft: 12,
-  },
-  specBold: {
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  bottomBar: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderColor: '#F1F5F9',
-    flexDirection: 'row',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-});

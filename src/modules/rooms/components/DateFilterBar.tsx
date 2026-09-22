@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarPickerModal } from './CalendarPickerModal';
 import { GuestPickerModal } from './GuestPickerModal';
@@ -49,60 +49,60 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const guestCount = capacity || '2';
 
   return (
-    <View style={styles.outerContainer}>
-      <View style={styles.barContainer}>
+    <View className="px-3 pt-2.5 pb-1.5">
+      <View className="flex-row items-center bg-white rounded-[18px] border border-slate-200 py-1.5 px-2 shadow-sm elevation-2">
         {/* SEGMENTO 1: FECHA DE ENTRADA */}
         <TouchableOpacity
-          style={styles.dateSegment}
+          className="flex-1 items-start py-0.5 px-1.5"
           onPress={() => setCalendarTarget('checkIn')}
           activeOpacity={0.7}
         >
-          <Text style={styles.segmentLabel}>ENTRADA</Text>
-          <View style={styles.valueWithIconRow}>
+          <Text className="text-[8.5px] font-extrabold text-slate-400 tracking-wider">ENTRADA</Text>
+          <View className="flex-row items-center gap-1 mt-0.5">
             <Ionicons name="calendar-outline" size={13} color="#0F172A" />
-            <Text style={styles.segmentValue} numberOfLines={1}>
+            <Text className="text-[11.5px] font-extrabold text-slate-900" numberOfLines={1}>
               {checkInLabel}
             </Text>
           </View>
         </TouchableOpacity>
 
         {/* SEPARADOR VERTICAL */}
-        <View style={styles.verticalDivider} />
+        <View className="w-[1px] h-6 bg-slate-200 mx-1" />
 
         {/* SEGMENTO 2: FECHA DE SALIDA */}
         <TouchableOpacity
-          style={styles.dateSegment}
+          className="flex-1 items-start py-0.5 px-1.5"
           onPress={() => setCalendarTarget('checkOut')}
           activeOpacity={0.7}
         >
-          <Text style={styles.segmentLabel}>SALIDA</Text>
-          <View style={styles.valueWithIconRow}>
+          <Text className="text-[8.5px] font-extrabold text-slate-400 tracking-wider">SALIDA</Text>
+          <View className="flex-row items-center gap-1 mt-0.5">
             <Ionicons name="calendar-outline" size={13} color="#0F172A" />
-            <Text style={styles.segmentValue} numberOfLines={1}>
+            <Text className="text-[11.5px] font-extrabold text-slate-900" numberOfLines={1}>
               {checkOutLabel}
             </Text>
           </View>
         </TouchableOpacity>
 
         {/* SEPARADOR VERTICAL */}
-        <View style={styles.verticalDivider} />
+        <View className="w-[1px] h-6 bg-slate-200 mx-1" />
 
         {/* SEGMENTO 3: HUÉSPEDES */}
         <TouchableOpacity
-          style={styles.guestSegment}
+          className="px-1.5 py-0.5 rounded-lg items-start justify-center"
           onPress={() => setGuestModalVisible(true)}
           activeOpacity={0.7}
         >
-          <Text style={styles.segmentLabel}>HUÉSPEDES</Text>
-          <View style={styles.guestInputRow}>
+          <Text className="text-[8.5px] font-extrabold text-slate-400 tracking-wider">HUÉSPEDES</Text>
+          <View className="flex-row items-center gap-1 mt-0.5">
             <Ionicons name="people-outline" size={14} color="#0F172A" />
-            <Text style={styles.guestValueText}>{guestCount}</Text>
+            <Text className="text-[12px] font-black text-slate-900">{guestCount}</Text>
           </View>
         </TouchableOpacity>
 
         {/* SEGMENTO 4: BOTÓN DE BÚSQUEDA */}
         <TouchableOpacity
-          style={styles.searchButton}
+          className="w-9 h-9 rounded-xl bg-[#488C8C] justify-center items-center ml-1 shadow-sm elevation-2"
           onPress={onSearch}
           activeOpacity={0.8}
         >
@@ -149,91 +149,3 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 6,
-  },
-  barContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  dateSegment: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    paddingVertical: 2,
-    paddingHorizontal: 5,
-  },
-  valueWithIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  segmentLabel: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#94A3B8',
-    letterSpacing: 0.6,
-  },
-  segmentValue: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#0F172A',
-  },
-  verticalDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#E2E8F0',
-    marginHorizontal: 3,
-  },
-  guestSegment: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-  guestInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  guestValueText: {
-    fontSize: 12,
-    fontWeight: '800',
-    fontFamily: 'Sora_800ExtraBold',
-    color: '#0F172A',
-  },
-  searchButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 13,
-    backgroundColor: '#488C8C',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
-    shadowColor: '#488C8C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-});

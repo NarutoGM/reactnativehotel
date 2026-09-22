@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface QuickTestButtonsProps {
@@ -13,10 +13,12 @@ export const QuickTestButtons: React.FC<QuickTestButtonsProps> = ({ selectedEmai
   const isAdmin = selectedEmail === 'admin@aurahotel.pe';
 
   return (
-    <View style={styles.container}>
+    <View className="flex-row justify-center items-center gap-3.5 mt-5 pb-2">
       {/* HUÉSPED */}
       <TouchableOpacity
-        style={[styles.iconBtn, isHuesped && styles.iconBtnActive]}
+        className={`w-11 h-11 rounded-full justify-center items-center elevation-2 shadow-sm ${
+          isHuesped ? 'bg-slate-900' : 'bg-slate-100'
+        }`}
         onPress={() => onSelect('huesped@aurahotel.pe', 'Huésped')}
         activeOpacity={0.7}
       >
@@ -29,7 +31,9 @@ export const QuickTestButtons: React.FC<QuickTestButtonsProps> = ({ selectedEmai
 
       {/* RECEPCIÓN */}
       <TouchableOpacity
-        style={[styles.iconBtn, isRecepcion && styles.iconBtnActive]}
+        className={`w-11 h-11 rounded-full justify-center items-center elevation-2 shadow-sm ${
+          isRecepcion ? 'bg-slate-900' : 'bg-slate-100'
+        }`}
         onPress={() => onSelect('recepcion@aurahotel.pe', 'Recepción')}
         activeOpacity={0.7}
       >
@@ -42,7 +46,9 @@ export const QuickTestButtons: React.FC<QuickTestButtonsProps> = ({ selectedEmai
 
       {/* ADMIN */}
       <TouchableOpacity
-        style={[styles.iconBtn, isAdmin && styles.iconBtnActive]}
+        className={`w-11 h-11 rounded-full justify-center items-center elevation-2 shadow-sm ${
+          isAdmin ? 'bg-slate-900' : 'bg-slate-100'
+        }`}
         onPress={() => onSelect('admin@aurahotel.pe', 'Admin')}
         activeOpacity={0.7}
       >
@@ -55,34 +61,3 @@ export const QuickTestButtons: React.FC<QuickTestButtonsProps> = ({ selectedEmai
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 14,
-    marginTop: 20,
-    paddingBottom: 8,
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F1F5F9', // Gris pizarra suave y limpio
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  iconBtnActive: {
-    backgroundColor: '#0F172A',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-});

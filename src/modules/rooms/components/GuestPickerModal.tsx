@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
-  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -43,17 +42,17 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-slate-900/45 justify-center items-center p-5">
           <TouchableWithoutFeedback>
-            <View style={styles.modalCard}>
+            <View className="w-full max-w-[320px] bg-white rounded-3xl p-5 shadow-2xl elevation-8 border border-slate-200">
               {/* Header */}
-              <View style={styles.headerRow}>
+              <View className="flex-row justify-between items-center pb-3 border-b border-slate-100">
                 <View>
-                  <Text style={styles.titleLabel}>FILTRO DE HABITACIÓN</Text>
-                  <Text style={styles.titleText}>Huéspedes</Text>
+                  <Text className="text-[10px] font-extrabold text-slate-400 tracking-wider">FILTRO DE HABITACIÓN</Text>
+                  <Text className="text-[17px] font-black text-slate-900 mt-0.5">Huéspedes</Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.closeBtn}
+                  className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
                   onPress={onClose}
                   activeOpacity={0.7}
                 >
@@ -62,10 +61,12 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
               </View>
 
               {/* Stepper Principal */}
-              <View style={styles.stepperContainer}>
-                <View style={styles.stepperButtons}>
+              <View className="flex-row justify-center items-center py-4.5">
+                <View className="flex-row items-center gap-2.5">
                   <TouchableOpacity
-                    style={[styles.stepBtn, currentCount <= 1 && styles.stepBtnDisabled]}
+                    className={`w-8.5 h-8.5 rounded-full border border-slate-200 bg-white justify-center items-center ${
+                      currentCount <= 1 ? 'border-slate-100 bg-slate-50 opacity-40' : ''
+                    }`}
                     onPress={handleDecrement}
                     disabled={currentCount <= 1}
                     activeOpacity={0.7}
@@ -77,10 +78,14 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
                     />
                   </TouchableOpacity>
 
-                  <Text style={styles.stepValue}>{currentCount}</Text>
+                  <Text className="text-[16px] font-black text-slate-900 min-w-[20px] text-center">
+                    {currentCount}
+                  </Text>
 
                   <TouchableOpacity
-                    style={[styles.stepBtn, currentCount >= 10 && styles.stepBtnDisabled]}
+                    className={`w-8.5 h-8.5 rounded-full border border-slate-200 bg-white justify-center items-center ${
+                      currentCount >= 10 ? 'border-slate-100 bg-slate-50 opacity-40' : ''
+                    }`}
                     onPress={handleIncrement}
                     disabled={currentCount >= 10}
                     activeOpacity={0.7}
@@ -95,23 +100,26 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
               </View>
 
               {/* Botones de Selección Rápida */}
-              <View style={styles.presetsRow}>
+              <View className="flex-row flex-wrap gap-1.5 pt-1 pb-3.5">
                 {PRESET_CAPACITIES.map((num) => {
                   const isSelected = currentCount === num;
                   return (
                     <TouchableOpacity
                       key={num}
-                      style={[styles.presetPill, isSelected && styles.presetPillActive]}
+                      className={`py-1.5 px-2.5 rounded-xl border ${
+                        isSelected
+                          ? 'bg-slate-900 border-slate-900'
+                          : 'bg-slate-100 border-slate-200'
+                      }`}
                       onPress={() => onSelect(String(num))}
                       activeOpacity={0.7}
                     >
                       <Text
-                        style={[
-                          styles.presetPillText,
-                          isSelected && styles.presetPillTextActive,
-                        ]}
+                        className={`text-[11.5px] font-bold ${
+                          isSelected ? 'text-white' : 'text-slate-600'
+                        }`}
                       >
-                        {num} {num === 1 ? 'pers.' : 'pers.'}
+                        {num} pers.
                       </Text>
                     </TouchableOpacity>
                   );
@@ -120,11 +128,11 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
 
               {/* Botón Aplicar */}
               <TouchableOpacity
-                style={styles.applyBtn}
+                className="bg-slate-900 rounded-xl py-3 items-center shadow-sm elevation-2"
                 onPress={onClose}
                 activeOpacity={0.85}
               >
-                <Text style={styles.applyBtnText}>Listo</Text>
+                <Text className="text-white text-[13.5px] font-extrabold">Listo</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
@@ -133,147 +141,3 @@ export const GuestPickerModal: React.FC<GuestPickerModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 320,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 20,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  titleLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-    color: '#94A3B8',
-    letterSpacing: 0.8,
-  },
-  titleText: {
-    fontSize: 17,
-    fontWeight: '900',
-    fontFamily: 'Sora_800ExtraBold',
-    color: '#0F172A',
-    marginTop: 1,
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 18,
-  },
-  stepperLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: 'Sora_700Bold',
-    color: '#0F172A',
-  },
-  stepperSubtext: {
-    fontSize: 12,
-    fontFamily: 'Sora_400Regular',
-    color: '#64748B',
-    marginTop: 2,
-  },
-  stepperButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  stepBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepBtnDisabled: {
-    borderColor: '#F1F5F9',
-    backgroundColor: '#F8FAFC',
-  },
-  stepValue: {
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: 'Sora_800ExtraBold',
-    color: '#0F172A',
-    minWidth: 20,
-    textAlign: 'center',
-  },
-  presetsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    paddingTop: 4,
-    paddingBottom: 14,
-  },
-  presetPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  presetPillActive: {
-    backgroundColor: '#0F172A',
-    borderColor: '#0F172A',
-  },
-  presetPillText: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    fontFamily: 'Sora_700Bold',
-    color: '#64748B',
-  },
-  presetPillTextActive: {
-    color: '#FFFFFF',
-  },
-  applyBtn: {
-    backgroundColor: '#0F172A',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  applyBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13.5,
-    fontWeight: '800',
-    fontFamily: 'Sora_700Bold',
-  },
-});
