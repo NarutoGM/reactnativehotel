@@ -837,14 +837,23 @@ export const BoardPage: React.FC = () => {
                   </View>
                 </View>
 
-                {/* Total Estadía */}
-                <FloatingLabelInput
-                  label="Monto Total a Cobrar (S/) *"
-                  iconName="pricetag-outline"
-                  keyboardType="numeric"
-                  value={manualTotalAmount}
-                  onChangeText={setManualTotalAmount}
-                />
+                {/* Resumen del Monto Total Calculado Automáticamente (Solo Lectura) */}
+                <View className="bg-[#EBF4F4] border-[1.2px] border-[#CDE5E5] rounded-xl px-4 py-2.5 my-1 flex-row justify-between items-center">
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="pricetag" size={16} color="#488C8C" />
+                    <View>
+                      <Text className="text-[10.5px] font-bold text-teal-800 uppercase tracking-tight">
+                        Monto Total Calculado
+                      </Text>
+                      <Text className="text-[11px] text-slate-500 font-medium">
+                        {manualNights} {parseInt(manualNights, 10) === 1 ? 'noche' : 'noches'} · S/ {targetRoomForBooking?.pricePerNight || 0}/noche
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className="text-[18px] font-black text-[#2E6666]">
+                    S/ {manualTotalAmount}
+                  </Text>
+                </View>
 
                 {/* Selector de Estado Inicial */}
                 <View className="mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-3">
