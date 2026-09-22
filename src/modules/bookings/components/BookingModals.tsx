@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Room } from '@/modules/rooms/api/rooms.api';
 import { LuxuryButton } from '@/components/LuxuryButton';
@@ -39,49 +39,61 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
     <>
       {/* MODAL CONFIRMACIÓN DE RESERVA */}
       <Modal visible={!!selectedRoom} transparent animationType="fade" onRequestClose={onCloseBooking}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View className="flex-1 bg-slate-900/65 justify-center items-center p-5">
+          <View className="bg-white rounded-[22px] p-6 w-full max-w-[380px] shadow-2xl elevation-8">
             {selectedRoom && (
               <>
-                <Text style={styles.modalTitle}>Confirmar Reserva</Text>
-                <Text style={styles.modalSubtitle}>{selectedRoom.title}</Text>
+                <Text className="text-slate-900 text-[19px] font-black">Confirmar Reserva</Text>
+                <Text className="text-slate-500 text-[13px] font-semibold mb-4 mt-0.5">{selectedRoom.title}</Text>
 
-                {/* Detalles Limpios sin cajas ni bordes pesados */}
-                <View style={styles.infoList}>
-                  <View style={styles.infoRow}>
+                {/* Detalles Limpios */}
+                <View className="py-1 mb-4.5 gap-2.5">
+                  <View className="flex-row items-center">
                     <Ionicons name="calendar-outline" size={16} color="#488C8C" />
-                    <Text style={styles.infoLabel}>Fechas:</Text>
-                    <Text style={styles.infoValue}>{checkIn} al {checkOut} ({nights} {nights === 1 ? 'noche' : 'noches'})</Text>
+                    <Text className="text-slate-500 text-[13px] font-semibold ml-2 mr-1">Fechas:</Text>
+                    <Text className="text-slate-900 text-[13px] font-semibold flex-1 text-right">
+                      {checkIn} al {checkOut} ({nights} {nights === 1 ? 'noche' : 'noches'})
+                    </Text>
                   </View>
 
-                  <View style={styles.infoRow}>
+                  <View className="flex-row items-center">
                     <Ionicons name="people-outline" size={16} color="#488C8C" />
-                    <Text style={styles.infoLabel}>Huéspedes:</Text>
-                    <Text style={styles.infoValue}>{capacity} personas · {selectedRoom.bedType}</Text>
+                    <Text className="text-slate-500 text-[13px] font-semibold ml-2 mr-1">Huéspedes:</Text>
+                    <Text className="text-slate-900 text-[13px] font-semibold flex-1 text-right">
+                      {capacity} personas · {selectedRoom.bedType}
+                    </Text>
                   </View>
 
-                  <View style={styles.infoRow}>
+                  <View className="flex-row items-center">
                     <Ionicons name="pricetag-outline" size={16} color="#488C8C" />
-                    <Text style={styles.infoLabel}>Precio x noche:</Text>
-                    <Text style={styles.infoValue}>S/ {pricePerNight}</Text>
+                    <Text className="text-slate-500 text-[13px] font-semibold ml-2 mr-1">Precio x noche:</Text>
+                    <Text className="text-slate-900 text-[13px] font-semibold flex-1 text-right">
+                      S/ {pricePerNight}
+                    </Text>
                   </View>
 
-                  <View style={styles.infoRow}>
+                  <View className="flex-row items-center">
                     <Ionicons name="calculator-outline" size={16} color="#488C8C" />
-                    <Text style={styles.infoLabel}>Precio final:</Text>
-                    <Text style={styles.infoValueBold}>S/ {total}</Text>
+                    <Text className="text-slate-500 text-[13px] font-semibold ml-2 mr-1">Precio final:</Text>
+                    <Text className="text-slate-900 text-[14px] font-black flex-1 text-right">
+                      S/ {total}
+                    </Text>
                   </View>
 
                   {/* Porcentaje para reservar */}
-                  <View style={styles.depositRow}>
+                  <View className="flex-row items-center pt-2.5 mt-1 border-t border-slate-100">
                     <Ionicons name="card-outline" size={16} color="#488C8C" />
-                    <Text style={styles.depositLabel}>Monto para reservar ({depositPercent}%):</Text>
-                    <Text style={styles.depositAmount}>S/ {depositAmount}</Text>
+                    <Text className="text-slate-900 text-[13px] font-extrabold ml-2">
+                      Monto para reservar ({depositPercent}%):
+                    </Text>
+                    <Text className="text-[#488C8C] text-[16px] font-black flex-1 text-right">
+                      S/ {depositAmount}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.modalActionRow}>
-                  <View style={{ flex: 1 }}>
+                <View className="flex-row gap-3">
+                  <View className="flex-1">
                     <LuxuryButton
                       title="Cancelar"
                       variant="outline"
@@ -90,7 +102,7 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
                     />
                   </View>
 
-                  <View style={{ flex: 1.3 }}>
+                  <View className="flex-[1.3]">
                     <LuxuryButton
                       title="Confirmar"
                       variant="solid"
@@ -107,20 +119,24 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
 
       {/* MODAL RESERVA EXITOSA */}
       <Modal visible={!!bookingSuccessModal} transparent animationType="fade" onRequestClose={onCloseSuccess}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSuccessContent}>
-            <View style={styles.successIconCircle}>
+        <View className="flex-1 bg-slate-900/65 justify-center items-center p-5">
+          <View className="bg-white rounded-[22px] p-6 w-full max-w-[360px] items-center shadow-2xl elevation-8">
+            <View className="w-15 h-15 rounded-full bg-emerald-50 justify-center items-center mb-3">
               <Ionicons name="checkmark-done" size={32} color="#16A34A" />
             </View>
-            <Text style={styles.successModalTitle}>¡Reserva Registrada!</Text>
-            <Text style={styles.successModalDesc}>
-              Tu reserva para <Text style={{ fontWeight: 'bold' }}>{bookingSuccessModal?.roomTitle}</Text> ha sido creada con éxito.
+            <Text className="text-slate-900 text-[20px] font-black">¡Reserva Registrada!</Text>
+            <Text className="text-slate-500 text-[13px] text-center mt-1.5 leading-4.5">
+              Tu reserva para <Text className="font-bold">{bookingSuccessModal?.roomTitle}</Text> ha sido creada con éxito.
             </Text>
 
-            <View style={styles.ticketBox}>
-              <Text style={styles.ticketLabel}>Código de Reserva:</Text>
-              <Text style={styles.ticketCode}>{bookingSuccessModal?.bookingId}</Text>
-              <Text style={styles.ticketTotal}>Total: S/ {bookingSuccessModal?.totalAmount}</Text>
+            <View className="bg-slate-50 rounded-2xl p-4 w-full items-center my-4">
+              <Text className="text-slate-500 text-[11px] font-semibold">Código de Reserva:</Text>
+              <Text className="text-slate-900 text-[22px] font-black tracking-widest my-1">
+                {bookingSuccessModal?.bookingId}
+              </Text>
+              <Text className="text-emerald-600 font-extrabold text-[15px]">
+                Total: S/ {bookingSuccessModal?.totalAmount}
+              </Text>
             </View>
 
             <LuxuryButton
@@ -135,149 +151,3 @@ export const BookingModals: React.FC<BookingModalsProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 24,
-    width: '100%',
-    maxWidth: 380,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  modalTitle: {
-    color: '#0F172A',
-    fontSize: 19,
-    fontWeight: '900',
-  },
-  modalSubtitle: {
-    color: '#64748B',
-    fontSize: 13,
-    marginBottom: 16,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  infoList: {
-    paddingVertical: 4,
-    marginBottom: 18,
-    gap: 11,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  infoLabel: {
-    color: '#64748B',
-    fontSize: 13,
-    fontWeight: '600',
-    marginLeft: 8,
-    marginRight: 4,
-  },
-  infoValue: {
-    color: '#0F172A',
-    fontSize: 13,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
-  },
-  infoValueBold: {
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '900',
-    flex: 1,
-    textAlign: 'right',
-  },
-  depositRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 10,
-    marginTop: 4,
-    borderTopWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  depositLabel: {
-    color: '#0F172A',
-    fontSize: 13,
-    fontWeight: '800',
-    marginLeft: 8,
-  },
-  depositAmount: {
-    color: '#488C8C',
-    fontSize: 16,
-    fontWeight: '900',
-    flex: 1,
-    textAlign: 'right',
-  },
-  modalActionRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalSuccessContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 24,
-    width: '100%',
-    maxWidth: 360,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  successIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#F0FDF4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  successModalTitle: {
-    color: '#0F172A',
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  successModalDesc: {
-    color: '#64748B',
-    fontSize: 13,
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 18,
-  },
-  ticketBox: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    padding: 16,
-    width: '100%',
-    alignItems: 'center',
-    marginVertical: 16,
-  },
-  ticketLabel: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  ticketCode: {
-    color: '#0F172A',
-    fontSize: 22,
-    fontWeight: '900',
-    letterSpacing: 2,
-    marginVertical: 4,
-  },
-  ticketTotal: {
-    color: '#16A34A',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-});

@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Image,
   Alert,
-  StyleSheet,
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -113,54 +112,76 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
   });
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-slate-100">
       {/* Category Tabs: Pendientes / Activas / Canceladas */}
-      <View style={styles.tabBar}>
+      <View className="flex-row bg-white p-1.5 mx-3.5 mt-3.5 rounded-2xl border border-slate-200 gap-1.5">
         <TouchableOpacity
-          style={[styles.tabButton, activeCategory === 'PENDING' && styles.tabButtonActive]}
+          className={`flex-1 py-2.5 items-center rounded-xl ${
+            activeCategory === 'PENDING' ? 'bg-[#488C8C]' : 'bg-slate-50'
+          }`}
           onPress={() => setActiveCategory('PENDING')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, activeCategory === 'PENDING' && styles.tabTextActive]}>
+          <Text
+            className={`text-[12px] font-bold ${
+              activeCategory === 'PENDING' ? 'text-white font-extrabold' : 'text-slate-500'
+            }`}
+          >
             Pendientes
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeCategory === 'ACTIVE' && styles.tabButtonActive]}
+          className={`flex-1 py-2.5 items-center rounded-xl ${
+            activeCategory === 'ACTIVE' ? 'bg-[#488C8C]' : 'bg-slate-50'
+          }`}
           onPress={() => setActiveCategory('ACTIVE')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, activeCategory === 'ACTIVE' && styles.tabTextActive]}>
+          <Text
+            className={`text-[12px] font-bold ${
+              activeCategory === 'ACTIVE' ? 'text-white font-extrabold' : 'text-slate-500'
+            }`}
+          >
             Activas
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeCategory === 'CANCELLED' && styles.tabButtonActive]}
+          className={`flex-1 py-2.5 items-center rounded-xl ${
+            activeCategory === 'CANCELLED' ? 'bg-[#488C8C]' : 'bg-slate-50'
+          }`}
           onPress={() => setActiveCategory('CANCELLED')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, activeCategory === 'CANCELLED' && styles.tabTextActive]}>
+          <Text
+            className={`text-[12px] font-bold ${
+              activeCategory === 'CANCELLED' ? 'text-white font-extrabold' : 'text-slate-500'
+            }`}
+          >
             Canceladas
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Bookings List */}
-      <ScrollView style={styles.listScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24, paddingTop: 12 }}
+      >
         {loading ? (
-          <View style={styles.centerBox}>
+          <View className="flex-1 justify-center items-center py-16">
             <ActivityIndicator size="large" color="#488C8C" />
-            <Text style={styles.loadingText}>Cargando tus reservas...</Text>
+            <Text className="text-slate-500 text-[13px] font-medium mt-3">Cargando tus reservas...</Text>
           </View>
         ) : filteredBookings.length === 0 ? (
-          <View style={styles.centerBox}>
+          <View className="flex-1 justify-center items-center px-8 py-16">
             <Ionicons name="receipt-outline" size={48} color="#94A3B8" />
-            <Text style={styles.emptyTitle}>
+            <Text className="text-slate-900 text-[16px] font-bold mt-3">
               No hay reservas en esta categoría
             </Text>
-            <Text style={styles.emptySubtitle}>
+            <Text className="text-slate-500 text-center text-[12px] mt-1">
               Las reservas realizadas se mostrarán aquí con su estado actual y comprobante.
             </Text>
           </View>
@@ -179,43 +200,44 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                 : '#64748B';
 
             return (
-              <View key={b.id} style={styles.bookingCard}>
-                {/* Header Card con código y estado limpio */}
-                <View style={styles.cardHeader}>
-                  <View style={styles.bookingCodeRow}>
+              <View
+                key={b.id}
+                className="bg-white mx-3.5 mb-3 rounded-2xl p-4 border border-slate-200 shadow-sm elevation-2"
+              >
+                {/* Header Card con código y estado */}
+                <View className="flex-row justify-between items-center pb-2.5 border-b border-slate-100">
+                  <View className="flex-row items-center gap-1.5">
                     <Ionicons name="bookmark" size={16} color={iconColor} />
-                    <Text style={styles.bookingCodeText}>
+                    <Text className="text-slate-900 font-black text-[14px] tracking-wide">
                       {b.bookingId}
                     </Text>
                   </View>
 
                   <View
-                    style={[
-                      styles.statusBadge,
+                    className={`px-2.5 py-1 rounded-full ${
                       b.status === 'CONFIRMED'
-                        ? styles.statusBadgeConfirmed
+                        ? 'bg-emerald-100'
                         : b.status === 'CHECKED_IN'
-                        ? styles.statusBadgeCheckedIn
+                        ? 'bg-sky-100'
                         : b.status === 'PENDING'
-                        ? styles.statusBadgePending
+                        ? 'bg-orange-100'
                         : b.status === 'CANCELLED' || b.status === 'REJECTED'
-                        ? styles.statusBadgeCancelled
-                        : styles.statusBadgeNeutral,
-                    ]}
+                        ? 'bg-red-100'
+                        : 'bg-slate-100'
+                    }`}
                   >
                     <Text
-                      style={[
-                        styles.statusText,
+                      className={`text-[10px] font-black tracking-wide ${
                         b.status === 'CONFIRMED'
-                          ? styles.statusTextConfirmed
+                          ? 'text-emerald-700'
                           : b.status === 'CHECKED_IN'
-                          ? styles.statusTextCheckedIn
+                          ? 'text-sky-700'
                           : b.status === 'PENDING'
-                          ? styles.statusTextPending
+                          ? 'text-orange-700'
                           : b.status === 'CANCELLED' || b.status === 'REJECTED'
-                          ? styles.statusTextCancelled
-                          : styles.statusTextNeutral,
-                      ]}
+                          ? 'text-red-700'
+                          : 'text-slate-700'
+                      }`}
                     >
                       {b.status === 'PENDING'
                         ? 'PENDIENTE DE VOUCHER'
@@ -235,64 +257,64 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                 </View>
 
                 {/* Room Info */}
-                <View style={styles.cardBody}>
+                <View className="pt-3 pb-2">
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => {
                       if (b.room) setDetailRoom(b.room);
                     }}
-                    style={styles.roomTitleTouchable}
+                    className="flex-row justify-between items-center mb-1.5"
                   >
-                    <Text style={styles.roomTitle}>
+                    <Text className="text-slate-900 font-black text-[16px] flex-1 pr-2">
                       {b.room?.title || 'Habitación en Aura Grand Hotel'}
                     </Text>
-                    <View style={styles.viewDetailBadge}>
-                      <Text style={styles.viewDetailText}>Ver detalle</Text>
+                    <View className="flex-row items-center bg-[#EBF4F4] px-2 py-0.5 rounded-md">
+                      <Text className="text-[#488C8C] text-[11px] font-bold mr-0.5">Ver detalle</Text>
                       <Ionicons name="chevron-forward" size={13} color="#488C8C" />
                     </View>
                   </TouchableOpacity>
-                  
-                  <View style={styles.infoRow}>
+
+                  <View className="flex-row items-center mt-1">
                     <Ionicons name="calendar-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
-                    <Text style={styles.roomDetails}>
+                    <Text className="text-slate-500 text-[12px] font-semibold">
                       {b.checkInDate} al {b.checkOutDate} ({b.nights} {b.nights === 1 ? 'noche' : 'noches'})
                     </Text>
                   </View>
 
-                  <View style={styles.infoRow}>
+                  <View className="flex-row items-center mt-1">
                     <Ionicons name="people-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
-                    <Text style={styles.roomDetails}>
+                    <Text className="text-slate-500 text-[12px] font-semibold">
                       {b.guestsCount} {b.guestsCount === 1 ? 'huésped' : 'huéspedes'}
                     </Text>
                   </View>
 
-                  <Text style={styles.roomTotal}>
-                    Total: <Text style={styles.roomTotalAmount}>S/ {b.totalAmount}</Text>
+                  <Text className="text-slate-900 font-bold text-[14px] mt-1.5">
+                    Total: <Text className="font-black text-[16px] text-slate-900">S/ {b.totalAmount}</Text>
                   </Text>
                 </View>
 
                 {/* Voucher Action: Comprobantes sin borde/bg pesado, hasta 2 comprobantes */}
                 {hasVouchers ? (
-                  <View style={styles.voucherContainer}>
-                    <Text style={styles.voucherTitle}>
+                  <View className="mt-2.5 pt-2.5 border-t border-slate-100">
+                    <Text className="text-slate-900 text-[12px] font-extrabold mb-2">
                       {vouchers.length === 1 ? 'Comprobante Adjunto' : 'Comprobantes Adjuntos (2/2)'}
                     </Text>
 
-                    <View style={styles.voucherThumbnailsRow}>
+                    <View className="flex-row items-center gap-3">
                       {vouchers.map((url, idx) => (
                         <TouchableOpacity
                           key={idx}
                           activeOpacity={0.8}
                           onPress={() => setPreviewImageUrl(url)}
-                          style={styles.voucherThumbnailWrapper}
+                          className="relative rounded-xl overflow-hidden"
                         >
                           <Image
                             source={{ uri: url }}
-                            style={styles.voucherThumbnail}
+                            className="w-15 h-15 rounded-xl bg-slate-200"
                             resizeMode="cover"
                           />
-                          <View style={styles.voucherBadgeOverlay}>
-                            <Text style={styles.voucherBadgeText}>#{idx + 1}</Text>
+                          <View className="absolute bottom-1 right-1 bg-slate-900/75 px-1.5 py-0.5 rounded">
+                            <Text className="text-white text-[9px] font-extrabold">#{idx + 1}</Text>
                           </View>
                         </TouchableOpacity>
                       ))}
@@ -303,14 +325,14 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                           activeOpacity={0.7}
                           onPress={() => handlePickAndUploadVoucher(b)}
                           disabled={uploadingId === b.id}
-                          style={styles.addSecondVoucherButton}
+                          className="flex-row items-center px-3 h-15 rounded-xl border border-dashed border-[#488C8C] bg-[#F0FDFA] gap-1.5"
                         >
                           {uploadingId === b.id ? (
                             <ActivityIndicator size="small" color="#488C8C" />
                           ) : (
                             <>
                               <Ionicons name="add-circle-outline" size={18} color="#488C8C" />
-                              <Text style={styles.addSecondVoucherText}>+ 2do Comprobante</Text>
+                              <Text className="text-[#488C8C] text-[11px] font-bold">+ 2do Comprobante</Text>
                             </>
                           )}
                         </TouchableOpacity>
@@ -318,7 +340,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
                     </View>
                   </View>
                 ) : isPending ? (
-                  <View style={styles.voucherButtonContainer}>
+                  <View className="mt-1.5">
                     <LuxuryButton
                       title="Subir Comprobante (Hasta 2)"
                       variant="solid"
@@ -336,23 +358,23 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
         )}
       </ScrollView>
 
-      {/* Modal Detalles de Habitación (Solo lectura informativa, sin botón de reservar) */}
+      {/* Modal Detalles de Habitación (Solo lectura informativa) */}
       <RoomDetailModal
         room={detailRoom}
         onClose={() => setDetailRoom(null)}
         showBookButton={false}
       />
 
-      {/* Modal Preview de Imagen de Comprobante en Pantalla Completa */}
+      {/* Modal Preview de Imagen de Comprobante en Pantalla Completa con fondo transparente */}
       <Modal
         visible={!!previewImageUrl}
         transparent
         animationType="fade"
         onRequestClose={() => setPreviewImageUrl(null)}
       >
-        <View style={styles.imagePreviewOverlay}>
+        <View className="flex-1 bg-transparent justify-center items-center p-4">
           <TouchableOpacity
-            style={styles.imagePreviewCloseBtn}
+            className="absolute top-12 right-5 z-50 w-11 h-11 rounded-full bg-slate-900/75 justify-center items-center"
             onPress={() => setPreviewImageUrl(null)}
             activeOpacity={0.8}
           >
@@ -361,7 +383,7 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
           {previewImageUrl && (
             <Image
               source={{ uri: previewImageUrl }}
-              style={styles.imagePreviewFull}
+              className="w-full h-[80%]"
               resizeMode="contain"
             />
           )}
@@ -370,280 +392,3 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({ currentUser }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    padding: 6,
-    marginHorizontal: 14,
-    marginTop: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 6,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 9,
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#F8FAFC',
-  },
-  tabButtonActive: {
-    backgroundColor: '#488C8C',
-  },
-  tabText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-  tabTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  listScroll: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 24,
-  },
-  centerBox: {
-    paddingVertical: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  loadingText: {
-    color: '#64748B',
-    marginTop: 8,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  emptyTitle: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  emptySubtitle: {
-    color: '#64748B',
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  bookingCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  bookingCodeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  bookingCodeText: {
-    color: '#0F172A',
-    fontWeight: '900',
-    fontSize: 15,
-    letterSpacing: 0.5,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusBadgePending: {
-    backgroundColor: '#FFF7ED',
-  },
-  statusBadgeConfirmed: {
-    backgroundColor: '#F0FDF4',
-  },
-  statusBadgeCheckedIn: {
-    backgroundColor: '#F0FDF4',
-  },
-  statusBadgeCancelled: {
-    backgroundColor: '#FEF2F2',
-  },
-  statusBadgeNeutral: {
-    backgroundColor: '#F1F5F9',
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-  statusTextPending: {
-    color: '#EA580C', // Naranja
-  },
-  statusTextConfirmed: {
-    color: '#16A34A', // Verde
-  },
-  statusTextCheckedIn: {
-    color: '#16A34A', // Verde
-  },
-  statusTextCancelled: {
-    color: '#DC2626', // Rojo
-  },
-  statusTextNeutral: {
-    color: '#64748B',
-  },
-  cardBody: {
-    paddingVertical: 10,
-  },
-  roomTitleTouchable: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  roomTitle: {
-    color: '#0F172A',
-    fontWeight: '900',
-    fontSize: 16,
-    flex: 1,
-    paddingRight: 8,
-  },
-  viewDetailBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EBF4F4',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  viewDetailText: {
-    color: '#488C8C',
-    fontSize: 11,
-    fontWeight: '700',
-    marginRight: 2,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 3.5,
-  },
-  roomDetails: {
-    color: '#64748B',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  roomTotal: {
-    color: '#0F172A',
-    fontWeight: '700',
-    fontSize: 14,
-    marginTop: 6,
-  },
-  roomTotalAmount: {
-    fontWeight: '900',
-    fontSize: 16,
-    color: '#0F172A',
-  },
-  voucherButtonContainer: {
-    marginTop: 6,
-  },
-  voucherContainer: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  voucherTitle: {
-    color: '#0F172A',
-    fontSize: 12,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  voucherThumbnailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  voucherThumbnailWrapper: {
-    position: 'relative',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  voucherThumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: '#E2E8F0',
-  },
-  voucherBadgeOverlay: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
-  },
-  voucherBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  addSecondVoucherButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    height: 60,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#488C8C',
-    backgroundColor: '#F0FDFA',
-    gap: 6,
-  },
-  addSecondVoucherText: {
-    color: '#488C8C',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  imagePreviewOverlay: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  imagePreviewCloseBtn: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePreviewFull: {
-    width: '100%',
-    height: '80%',
-  },
-});
